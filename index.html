@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الحجوزات الخارجية الفورية</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f0f4f8;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 15px;
+        }
+        .header h2 {
+            color: #10b981;
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+        .header p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .clinic-phone-badge {
+            display: inline-block;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.85rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #18222d;
+            font-size: 0.9rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            text-align: right;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #059669;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .footer-brand {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #3b82f6;
+            letter-spacing: 1px;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <!-- 🚀 الحقول البرمجية التي سيتم حقن بيانات العيادة الحقيقية داخلها فورياً -->
+        <h2 id="lblClinicName">جاري تحميل اسم العيادة...</h2>
+        <div id="lblClinicPhone" class="clinic-phone-badge" style="display: none;"></div>
+        <p>تسجيل الحجوزات الخارجية [سريع من الموبايل]</p>
+    </div>
+
+    <div id="statusAlert" class="alert"></div>
+
+    <form id="appointmentForm">
+        <div class="form-group">
+            <label>اسم المريض الكامل للعيادة:</label>
+            <input type="text" id="patientName" class="form-control" placeholder="اسم المريض الثنائي أو الثلاثي" required>
+        </div>
+
+        <div class="form-group">
+            <label>العمر:</label>
+            <input type="number" id="patientAge" class="form-control" placeholder="مثال: 30" required>
+        </div>
+
+        <div class="form-group">
+            <label>الجنس:</label>
+            <select id="patientGender" class="form-control">
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>رقم الهاتف:</label>
+            <input type="tel" id="patientPhone" class="form-control" placeholder="مثال: 07700000000" required>
+        </div>
+
+        <div class="form-group">
+            <label>العنوان / السكن:</label>
+            <input type="text" id="patientAddress" class="form-control" placeholder="مثال: بغداد / الكرادة" required>
+        </div>
+
+        <button type="submit" class="btn">💾 إرسال وتثبيت الحجز في طابور العيادة</button>
+        <div class="footer-brand">HALA Clinic System</div>
+    </form>
+</div>
+
+<script>
+    // 🚀 استخراج رابط الـ Firebase الديناميكي والمعزول الممرر من الباركود
+    function getFirebaseUrlFromParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('db');
+    }
+
+    // 🚀 دالة ذكية لجلب بيانات العيادة (الاسم والهاتف) المخزنة في عقدة التعريف السحابية للعيادة
+    async function fetchLiveClinicMetadata() {
+        const targetUrl = getFirebaseUrlFromParams();
+        const lblName = document.getElementById('lblClinicName');
+        const lblPhone = document.getElementById('lblClinicPhone');
+
+        if (!targetUrl) {
+            lblName.textContent = "بوابة العيادة الطبية المخصصة";
+            return;
+        }
+
+        try {
+            // تحويل رابط الحجوزات لقراءة ملف معلومات العيادة (metadata.json) المرفوع بالتزامن من البرنامج
+            const metadataUrl = targetUrl.replace('.json', '_metadata.json');
+            const response = await fetch(metadataUrl);
+            if (response.ok) {
+                const data = await response.json();
+                if (data) {
+                    if (data.ClinicName) {
+                        lblName.textContent = data.ClinicName;
+                    }
+                    if (data.ClinicPhone && data.ClinicPhone !== "---") {
+                        lblPhone.textContent = "📞 هاتف العيادة: " + data.ClinicPhone;
+                        lblPhone.style.display = "inline-block";
+                    }
+                    return;
+                }
+            }
+        } catch (e) {
+            console.error("خطأ في جلب بيانات التعريف السحابية للعيادة:", e);
+        }
+        lblName.textContent = "بوابة العيادة الطبية المخصصة";
+    }
+
+    // تشغيل جلب البيانات فور تحميل الصفحة في الموبايل
+    window.addEventListener('DOMContentLoaded', fetchLiveClinicMetadata);
+
+    document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const alertBox = document.getElementById('statusAlert');
+        const targetUrl = getFirebaseUrlFromParams();
+
+        if (!targetUrl) {
+            alertBox.className = "alert alert-error";
+            alertBox.textContent = "❌ خطأ أمني: الرابط البرمجي للعيادة غير مكتمل";
+            alertBox.style.display = "block";
+            return;
+        }
+
+        const payload = {
+            PatientName: document.getElementById('patientName').value.trim(),
+            Age: document.getElementById('patientAge').value.trim(),
+            Gender: document.getElementById('patientGender').value,
+            Phone: document.getElementById('patientPhone').value.trim(),
+            Address: document.getElementById('patientAddress').value.trim()
+        };
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alertBox.className = "alert alert-success";
+                alertBox.textContent = "✅ تم إرسال الحجز بنجاح لتثبيته في طابور العيادة!";
+                alertBox.style.display = "block";
+                document.getElementById('appointmentForm').reset();
+            } else {
+                throw new Error();
+            }
+        } catch (error) {
+            alertBox.className = "alert alert-error";
+            alertBox.textContent = "❌ فشل الاتصال، تحقق من إنترنت الهاتف والمحاولة مجدداً";
+            alertBox.style.display = "block";
+        }
+
+        setTimeout(() => {
+            alertBox.style.display = "none";
+        }, 5000);
+    });
+</script>
+
+</body>
+</html>
