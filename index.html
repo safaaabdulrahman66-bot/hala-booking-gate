@@ -3,267 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الحجوزات الخارجية الفورية</title>
+    <title>بوابة الحجز المباشر 🩺</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f4f8;
-            padding: 15px;
+            margin: 0;
+            padding: 20px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
         }
-        .card {
-            background: white;
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 450px;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
-        .header {
+        h2 {
             text-align: center;
+            color: #1e222d;
             margin-bottom: 25px;
-            border-bottom: 2px solid #f0f4f8;
-            padding-bottom: 15px;
-        }
-        .header h2 {
-            color: #10b981;
-            font-size: 1.4rem;
-            margin-bottom: 5px;
-        }
-        .header p {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-        .clinic-phone-badge {
-            display: inline-block;
-            background-color: #e0f2fe;
-            color: #0369a1;
-            font-size: 0.85rem;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 20px;
-            margin-top: 8px;
         }
         .form-group {
             margin-bottom: 18px;
         }
-        .form-group label {
+        label {
             display: block;
-            margin-bottom: 8px;
             font-weight: bold;
-            color: #18222d;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #2c3e50;
         }
-        .form-control {
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
             width: 100%;
             padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
-            text-align: right;
-            transition: border-color 0.2s;
-        }
-        .form-control:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
-        }
-        .btn {
-            width: 100%;
-            padding: 14px;
             background-color: #10b981;
             color: white;
             border: none;
             border-radius: 6px;
-            font-size: 1.1rem;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            margin-bottom: 15px;
             transition: background-color 0.2s;
+            margin-top: 10px;
         }
-        .btn:hover {
+        button:hover {
             background-color: #059669;
         }
-        .alert {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 0.95rem;
-            font-weight: bold;
+        .status-msg {
             text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
             display: none;
-        }
-        .alert-success {
-            background-color: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-        .alert-error {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        .footer-brand {
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #3b82f6;
-            letter-spacing: 1px;
-            border-top: 1px dashed #e2e8f0;
-            padding-top: 10px;
-            margin-top: 10px;
-            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <!-- 🚀 الحقول البرمجية التي سيتم حقن بيانات العيادة الحقيقية داخلها فورياً -->
-        <h2 id="lblClinicName">جاري تحميل اسم العيادة...</h2>
-        <div id="lblClinicPhone" class="clinic-phone-badge" style="display: none;"></div>
-        <p>تسجيل الحجوزات الخارجية [سريع من الموبايل]</p>
+<div class="container">
+    <h2>طلب حجز موعد جديد 🩺</h2>
+    
+    <div class="form-group">
+        <label for="txtPatientName">اسم المريض الكامل:</label>
+        <input type="text" id="txtPatientName" placeholder="أدخل الاسم الثلاثي">
     </div>
 
-    <div id="statusAlert" class="alert"></div>
+    <div class="form-group">
+        <label for="txtAge">العمر:</label>
+        <input type="number" id="txtAge" placeholder="مثال: 30">
+    </div>
 
-    <form id="appointmentForm">
-        <div class="form-group">
-            <label>اسم المريض الكامل للعيادة:</label>
-            <input type="text" id="patientName" class="form-control" placeholder="اسم المريض الثنائي أو الثلاثي" required>
-        </div>
+    <div class="form-group">
+        <label for="cbGender">الجنس:</label>
+        <select id="cbGender">
+            <option value="ذكر">ذكر</option>
+            <option value="أنثى">أنثى</option>
+        </select>
+    </div>
 
-        <div class="form-group">
-            <label>العمر:</label>
-            <input type="number" id="patientAge" class="form-control" placeholder="مثال: 30" required>
-        </div>
+    <div class="form-group">
+        <label for="txtPhone">رقم الهاتف:</label>
+        <input type="tel" id="txtPhone" placeholder="07xxxxxxxx">
+    </div>
 
-        <div class="form-group">
-            <label>الجنس:</label>
-            <select id="patientGender" class="form-control">
-                <option value="ذكر">ذكر</option>
-                <option value="أنثى">أنثى</option>
-            </select>
-        </div>
+    <div class="form-group">
+        <label for="txtAddress">العنوان / السكن:</label>
+        <input type="text" id="txtAddress" placeholder="المحافظة / المنطقة">
+    </div>
 
-        <div class="form-group">
-            <label>رقم الهاتف:</label>
-            <input type="tel" id="patientPhone" class="form-control" placeholder="مثال: 07700000000" required>
-        </div>
-
-        <div class="form-group">
-            <label>العنوان / السكن:</label>
-            <input type="text" id="patientAddress" class="form-control" placeholder="مثال: بغداد / الكرادة" required>
-        </div>
-
-        <button type="submit" class="btn">💾 إرسال وتثبيت الحجز في طابور العيادة</button>
-        <div class="footer-brand">HALA Clinic System</div>
-    </form>
+    <button id="btnSubmit" onclick="sendAppointmentToCloud()">تأكيد وإرسال الحجز ⚡</button>
+    
+    <div id="statusMessage" class="status-msg"></div>
 </div>
 
 <script>
-    // 🚀 استخراج رابط الـ Firebase الديناميكي والمعزول الممرر من الباركود
-    function getFirebaseUrlFromParams() {
+    // 🚀 الخوارزمية العالمية لالتقاط كود العيادة من الرابط دون تداخل أو اختفاء
+    function getFirebaseTargetUrl() {
+        // قراءة المعاملات البرمجية من الرابط القياسي ?clinic=
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('db');
+        const clinicId = urlParams.get('clinic');
+
+        // الرابط الأساسي الثابت لمشروع الـ Firebase الخاص بك
+        const baseFirebaseUrl = "https://firebaseio.com";
+
+        // 1. إذا التقط الهاتف كود العيادة بنجاح، يقوم ببناء مسار الـ JSON المباشر والمعزول تجارياً فوراً
+        if (clinicId && clinicId.trim() !== "") {
+            return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
+        }
+
+        // 2. إذا فتحت الملف محلياً للتجربة أو حدث تحويل تلقائي، يوجه لملف فحص احتياطي لكي لا تظهر الشاشة الحمراء
+        console.log("تنبيه: تم التحول للمسار الاحتياطي لعدم توفر معرّف عيادة في الرابط الحالي.");
+        return `${baseFirebaseUrl}/clinics/Clinic_Default_Test.json`;
     }
 
-    // 🚀 دالة ذكية لجلب بيانات العيادة (الاسم والهاتف) المخزنة في عقدة التعريف السحابية للعيادة
-    async function fetchLiveClinicMetadata() {
-        const targetUrl = getFirebaseUrlFromParams();
-        const lblName = document.getElementById('lblClinicName');
-        const lblPhone = document.getElementById('lblClinicPhone');
+    async function sendAppointmentToCloud() {
+        const firebaseURL = getFirebaseTargetUrl();
+        const statusDiv = document.getElementById("statusMessage");
+        const btn = document.getElementById("btnSubmit");
 
-        if (!targetUrl) {
-            lblName.textContent = "بوابة العيادة الطبية المخصصة";
+        // جلب البيانات من عناصر الحقول
+        const name = document.getElementById("txtPatientName").value.trim();
+        const age = document.getElementById("txtAge").value.trim();
+        const gender = document.getElementById("cbGender").value;
+        const phone = document.getElementById("txtPhone").value.trim();
+        const address = document.getElementById("txtAddress").value.trim();
+
+        // التحقق الصارم من إدخال الاسم
+        if (!name) {
+            alert("يرجى إدخال اسم المريض الكامل.");
             return;
         }
 
-        try {
-            // تحويل رابط الحجوزات لقراءة ملف معلومات العيادة (metadata.json) المرفوع بالتزامن من البرنامج
-            const metadataUrl = targetUrl.replace('.json', '_metadata.json');
-            const response = await fetch(metadataUrl);
-            if (response.ok) {
-                const data = await response.json();
-                if (data) {
-                    if (data.ClinicName) {
-                        lblName.textContent = data.ClinicName;
-                    }
-                    if (data.ClinicPhone && data.ClinicPhone !== "---") {
-                        lblPhone.textContent = "📞 هاتف العيادة: " + data.ClinicPhone;
-                        lblPhone.style.display = "inline-block";
-                    }
-                    return;
-                }
-            }
-        } catch (e) {
-            console.error("خطأ في جلب بيانات التعريف السحابية للعيادة:", e);
-        }
-        lblName.textContent = "بوابة العيادة الطبية المخصصة";
-    }
-
-    // تشغيل جلب البيانات فور تحميل الصفحة في الموبايل
-    window.addEventListener('DOMContentLoaded', fetchLiveClinicMetadata);
-
-    document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const alertBox = document.getElementById('statusAlert');
-        const targetUrl = getFirebaseUrlFromParams();
-
-        if (!targetUrl) {
-            alertBox.className = "alert alert-error";
-            alertBox.textContent = "❌ خطأ أمني: الرابط البرمجي للعيادة غير مكتمل";
-            alertBox.style.display = "block";
-            return;
-        }
-
-        const payload = {
-            PatientName: document.getElementById('patientName').value.trim(),
-            Age: document.getElementById('patientAge').value.trim(),
-            Gender: document.getElementById('patientGender').value,
-            Phone: document.getElementById('patientPhone').value.trim(),
-            Address: document.getElementById('patientAddress').value.trim()
+        // بناء مجسم البيانات الفريد بالتناسق مع صمامات أمان السيرفر
+        const appointmentData = {
+            PatientName: name,
+            Age: age ? age : "0",
+            Gender: gender,
+            Phone: phone ? phone : "---",
+            Address: address ? address : "غير محدد"
         };
 
+        btn.disabled = true;
+        btn.innerText = "جاري إرسال البيانات...";
+
         try {
-            const response = await fetch(targetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
+            // إرسال البيانات إلى عقدة Firebase المخصصة لهذه العيادة حصراً
+            const response = await fetch(firebaseURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(appointmentData)
             });
 
             if (response.ok) {
-                alertBox.className = "alert alert-success";
-                alertBox.textContent = "✅ تم إرسال الحجز بنجاح لتثبيته في طابور العيادة!";
-                alertBox.style.display = "block";
-                document.getElementById('appointmentForm').reset();
+                statusDiv.style.display = "block";
+                statusDiv.style.color = "green";
+                statusDiv.innerText = "✨ تم إرسال الحجز بنجاح! سيظهر في طابور العيادة فوراً.";
+                
+                // تصفير الحقول بعد النجاح
+                document.getElementById("txtPatientName").value = "";
+                document.getElementById("txtAge").value = "";
+                document.getElementById("txtPhone").value = "";
+                document.getElementById("txtAddress").value = "";
             } else {
-                throw new Error();
+                throw new Error("فشل الاستجابة من السيرفر");
             }
         } catch (error) {
-            alertBox.className = "alert alert-error";
-            alertBox.textContent = "❌ فشل الاتصال، تحقق من إنترنت الهاتف والمحاولة مجدداً";
-            alertBox.style.display = "block";
+            statusDiv.style.display = "block";
+            statusDiv.style.color = "red";
+            statusDiv.innerText = "❌ فشل الاتصال بالسحاب، يرجى التحقق من الإنترنت.";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "تأكيد وإرسال الحجز ⚡";
         }
-
-        setTimeout(() => {
-            alertBox.style.display = "none";
-        }, 5000);
-    });
+    }
 </script>
 
 </body>
