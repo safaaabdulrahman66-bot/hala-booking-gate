@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الحجز المباشر 🩺</title>
+    <!-- 🚀 ربط ملف هوية التطبيق لتنشيط التثبيت التلقائي الصامت -->
+    <link rel="manifest" href="manifest.json">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -67,11 +69,30 @@
             font-weight: bold;
             display: none;
         }
+        /* زر التثبيت التلقائي الجذاب PWA */
+        .install-banner {
+            background-color: #1e293b;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- 🚀 بنر ذكي يظهر تلقائياً ويقترح تثبيت التطبيق بضغطة واحدة -->
+    <div id="pwaInstallBanner" class="install-banner" onclick="triggerPwaInstallation()">
+        📲 اضغط هنا لتثبيت تطبيق بوابة الحجز على هاتفكم فوراً ⚡
+    </div>
+
     <h2>طلب حجز موعد جديد 🩺</h2>
     
     <div class="form-group">
@@ -108,22 +129,38 @@
 </div>
 
 <script>
-    // 🚀 الخوارزمية العالمية لالتقاط كود العيادة من الرابط دون تداخل أو اختفاء
+    // 🚀 تسجيل محرك التثبيت الصامت تلقائياً بمجرد فتح المتصفح
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('pwaInstallBanner').style.display = 'block';
+    });
+
+    function triggerPwaInstallation() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    document.getElementById('pwaInstallBanner').style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        }
+    }
+
     function getFirebaseTargetUrl() {
-        // قراءة المعاملات البرمجية من الرابط القياسي ?clinic=
         const urlParams = new URLSearchParams(window.location.search);
         const clinicId = urlParams.get('clinic');
+        const baseFirebaseUrl = "https://firebaseio.com";
 
-        // الرابط الأساسي الثابت لمشروع الـ Firebase الخاص بك
-        const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com/";
-
-        // 1. إذا التقط الهاتف كود العيادة بنجاح، يقوم ببناء مسار الـ JSON المباشر والمعزول تجارياً فوراً
         if (clinicId && clinicId.trim() !== "") {
             return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
         }
-
-        // 2. إذا فتحت الملف محلياً للتجربة أو حدث تحويل تلقائي، يوجه لملف فحص احتياطي لكي لا تظهر الشاشة الحمراء
-        console.log("تنبيه: تم التحول للمسار الاحتياطي لعدم توفر معرّف عيادة في الرابط الحالي.");
         return `${baseFirebaseUrl}/clinics/Clinic_Default_Test.json`;
     }
 
@@ -132,33 +169,31 @@
         const statusDiv = document.getElementById("statusMessage");
         const btn = document.getElementById("btnSubmit");
 
-        // جلب البيانات من عناصر الحقول
         const name = document.getElementById("txtPatientName").value.trim();
         const age = document.getElementById("txtAge").value.trim();
         const gender = document.getElementById("cbGender").value;
         const phone = document.getElementById("txtPhone").value.trim();
         const address = document.getElementById("txtAddress").value.trim();
 
-        // التحقق الصارم من إدخال الاسم
         if (!name) {
             alert("يرجى إدخال اسم المريض الكامل.");
             return;
         }
 
-        // بناء مجسم البيانات الفريد بالتناسق مع صمامات أمان السيرفر
+        // 🚀 [الحقن الصارم]: إلزام المتصفح بإرسال حقل الحالة بـ "حجز مؤكد" لتطابق حسابات الخزينة
         const appointmentData = {
             PatientName: name,
             Age: age ? age : "0",
             Gender: gender,
             Phone: phone ? phone : "---",
-            Address: address ? address : "غير محدد"
+            Address: address ? address : "غير محدد",
+            VisitStatus: "حجز مؤكد"
         };
 
         btn.disabled = true;
         btn.innerText = "جاري إرسال البيانات...";
 
         try {
-            // إرسال البيانات إلى عقدة Firebase المخصصة لهذه العيادة حصراً
             const response = await fetch(firebaseURL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -170,7 +205,6 @@
                 statusDiv.style.color = "green";
                 statusDiv.innerText = "✨ تم إرسال الحجز بنجاح! سيظهر في طابور العيادة فوراً.";
                 
-                // تصفير الحقول بعد النجاح
                 document.getElementById("txtPatientName").value = "";
                 document.getElementById("txtAge").value = "";
                 document.getElementById("txtPhone").value = "";
