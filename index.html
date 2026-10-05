@@ -72,7 +72,7 @@
             font-weight: bold;
             display: none;
         }
-        /* 🚀 One-Click Global Native Installer Button Styling */
+        /* One-Click Global Native Installer Button Styling */
         .pwa-install-btn {
             background-color: #1e293b;
             color: #ffffff;
@@ -82,7 +82,7 @@
             text-align: center;
             font-size: 15px;
             font-weight: bold;
-            display: none; /* Appears instantly when system is ready */
+            display: none;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             border: 2px solid #10b981;
@@ -98,7 +98,7 @@
 <body>
 
 <div class="container">
-    <!-- 🚀 Global Commercial One-Click Instant Installer Action Button -->
+    <!-- Global Commercial One-Click Instant Installer Action Button -->
     <div id="btnHalaPwaInstall" class="pwa-install-btn" onclick="executeNativePwaInstallation()">
         📲 Click Here to Install "HALA Clinic System" App on Your Screen ⚡
     </div>
@@ -139,7 +139,6 @@
 </div>
 
 <script>
-    // Register Background Service Worker Engine
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
@@ -148,11 +147,9 @@
 
     let pwaInstallationPrompt;
     
-    // Capturing Google Native Installation Engine Event For One-Click Launch
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         pwaInstallationPrompt = e;
-        // Instantly force the English action button to appear inside the screen UI
         document.getElementById('btnHalaPwaInstall').style.display = 'block';
     });
 
@@ -172,15 +169,29 @@
         document.getElementById('btnHalaPwaInstall').style.display = 'none';
     });
 
+    // 🚀 [هندسة التلقيم الذكي للنسخة التجارية]: التقاط وحفظ المعرّف حتمياً ومن أول تثبيت
     function getFirebaseTargetUrl() {
         const urlParams = new URLSearchParams(window.location.search);
-        const clinicId = urlParams.get('clinic');
-        const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
+        let clinicId = urlParams.get('clinic');
+
+        // إذا وجد المعرّف في الرابط (عند مسح الباركود أول مرة)، يحفظه فوراً في ذاكرة الهاتف المستديمة
+        if (clinicId && clinicId.trim() !== "") {
+            localStorage.setItem('HalaSavedClinicID', clinicId.trim());
+        } else {
+            // إذا فتح السكرتير الأيقونة لاحقاً، يسترجع المعرّف المحفوظ تلقائياً ليعمل من أي مكان للأبد
+            clinicId = localStorage.getItem('HalaSavedClinicID');
+        }
+
+        // بناء الرابط السحابي بالتجميع الحرفي لمنع تشوهات المتصفحات
+        const s1 = "https://halac";
+        const s2 = "linicdb-default-rtdb.f";
+        const s3 = "irebaseio.com";
+        const baseFirebaseUrl = s1 + s2 + s3;
 
         if (clinicId && clinicId.trim() !== "") {
-            return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
+            return baseFirebaseUrl + "/clinics/" + clinicId.trim() + ".json";
         }
-        return `${baseFirebaseUrl}/clinics/Clinic_Default_Test.json`;
+        return baseFirebaseUrl + "/clinics/Clinic_Default_Test.json";
     }
 
     async function sendAppointmentToCloud() {
