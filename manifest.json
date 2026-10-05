@@ -1,0 +1,21 @@
+{
+  "short_name": "بوابة هلا سيستم",
+  "name": "بوابة الحجز المباشر للعيادة الطبية",
+  "icons": [
+    {
+      "src": "https://icons8.com",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://icons8.com",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#f0f4f8",
+  "theme_color": "#10b981",
+  "display": "standalone",
+  "orientation": "portrait"
+}
