@@ -156,7 +156,7 @@
     function getFirebaseTargetUrl() {
         const urlParams = new URLSearchParams(window.location.search);
         const clinicId = urlParams.get('clinic');
-        const baseFirebaseUrl = "https://firebaseio.com";
+        const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com/";
 
         if (clinicId && clinicId.trim() !== "") {
             return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
