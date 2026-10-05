@@ -133,33 +133,30 @@
 </div>
 
 <script>
-    // 🚀 خوارزمية العزل والتطهير الذاتي الفوري للمتصفح لتجاوز قيود جوجل الأمنية وحظر روابط المعاملات الديناميكية
-    (function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const clinicId = urlParams.get('clinic');
-        
-        if (clinicId && clinicId.trim() !== "") {
-            // حفظ المعرف بشكل مستديم وآمن في ذاكرة الهاتف
-            localStorage.setItem('saved_clinic_id', clinicId.trim());
-            console.log('تم حفظ معرف العيادة تجارياً ومحلياً بنجاح:', clinicId);
-            
-            // تطهير شريط العنوان فوراً والتحول للمسار النقي لإجبار المتصفح على تنشيط حدث التثبيت PWA
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    })();
+    let deferredPrompt;
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker Registered'))
-                .catch(err => console.log('Service Worker Failed', err));
-        });
+    // خوارزمية العزل والتطهير الذاتي الفورية مضافة قبل أي استدعاء أمني
+    const urlParams = new URLSearchParams(window.location.search);
+    const clinicId = urlParams.get('clinic');
+    if (clinicId && clinicId.trim() !== "") {
+        localStorage.setItem('saved_clinic_id', clinicId.trim());
+        // تنظيف شريط العنوان فوراً والتحول إلى النطاق النقي المستقر المتوافق مع Google
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    let deferredPrompt;
-    
+    // تسجيل الـ Service Worker بالنطاق المطلق والأصيل
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/hala-booking-gate/sw.js', { scope: '/hala-booking-gate/' })
+            .then(reg => {
+                console.log('Absolute Service Worker Active');
+                // إجبار المحرك على التحديث الفوري
+                reg.update();
+            })
+            .catch(err => console.log('Registration Failed', err));
+    }
+
+    // التقاط حدث التثبيت التلقائي الحتمي فور تطهير النطاق
     window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('تم التقاط حدث التثبيت التلقائي بنجاح حتمي بعد التطهير');
         e.preventDefault();
         deferredPrompt = e;
         document.getElementById('pwaInstallBanner').style.display = 'block';
@@ -182,14 +179,9 @@
     });
 
     function getFirebaseTargetUrl() {
-        // استدعاء المعرف النظيف والمحمي من الذاكرة المحلية الحتمية للهاتف
-        const clinicId = localStorage.getItem('saved_clinic_id');
+        const savedClinic = localStorage.getItem('saved_clinic_id') || 'Clinic_Default_Test';
         const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
-
-        if (clinicId && clinicId.trim() !== "") {
-            return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
-        }
-        return `${baseFirebaseUrl}/clinics/Clinic_Default_Test.json`;
+        return `${baseFirebaseUrl}/clinics/${savedClinic}.json`;
     }
 
     async function sendAppointmentToCloud() {
@@ -237,7 +229,7 @@
                 document.getElementById("txtPhone").value = "";
                 document.getElementById("txtAddress").value = "";
             } else {
-                throw new Error("فشل الاستجابة من السيرفر");
+                throw new Error("فشل الاستجابة");
             }
         } catch (error) {
             statusDiv.style.display = "block";
