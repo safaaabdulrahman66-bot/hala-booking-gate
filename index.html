@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الحجز المباشر 🩺</title>
-    <!-- 🚀 استدعاء الـ Manifest بشكل معزول ومستقر برمجياً -->
     <link rel="manifest" href="manifest.json">
     <style>
         body {
@@ -69,7 +68,6 @@
             font-weight: bold;
             display: none;
         }
-        /* 🚀 بنر التثبيت التلقائي الجذاب والفريد المخصص للنسخة التجارية */
         .install-banner {
             background-color: #1e293b;
             color: white;
@@ -79,7 +77,7 @@
             text-align: center;
             font-size: 14px;
             font-weight: bold;
-            display: none; /* مخفي افتراضياً ويظهر حتمياً عند التقاط المتصفح */
+            display: none;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             border: 2px solid #10b981;
@@ -95,7 +93,6 @@
 <body>
 
 <div class="container">
-    <!-- 🚀 البنر التجاري الذكي: سيظهر مجبراً أمام السكرتير بمجرد قراءة الباركود للتثبيت بنقرة واحدة -->
     <div id="pwaInstallBanner" class="install-banner" onclick="triggerPwaInstallation()">
         📲 اضغط هنا لتثبيت تطبيق "بوابة هلا سيستم" على هاتفكم فوراً ⚡
     </div>
@@ -136,7 +133,21 @@
 </div>
 
 <script>
-    // 🚀 تسجيل محرك الخدمة (Service Worker) بالمسار الجغرافي النقي لضمان استقرار التثبيت
+    // 🚀 خوارزمية العزل والتطهير الذاتي الفوري للمتصفح لتجاوز قيود جوجل الأمنية وحظر روابط المعاملات الديناميكية
+    (function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const clinicId = urlParams.get('clinic');
+        
+        if (clinicId && clinicId.trim() !== "") {
+            // حفظ المعرف بشكل مستديم وآمن في ذاكرة الهاتف
+            localStorage.setItem('saved_clinic_id', clinicId.trim());
+            console.log('تم حفظ معرف العيادة تجارياً ومحلياً بنجاح:', clinicId);
+            
+            // تطهير شريط العنوان فوراً والتحول للمسار النقي لإجبار المتصفح على تنشيط حدث التثبيت PWA
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    })();
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
@@ -147,12 +158,10 @@
 
     let deferredPrompt;
     
-    // 🚀 المحرك الذكي لالتقاط إمكانية التثبيت الفوري وإظهار البنر الملون أمام المستخدم مجبراً
     window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('beforeinstallprompt المجهر البرمجي التقط حدث التثبيت');
+        console.log('تم التقاط حدث التثبيت التلقائي بنجاح حتمي بعد التطهير');
         e.preventDefault();
         deferredPrompt = e;
-        // إظهار البنر فوراً في واجهة المستخدم دون الحاجة للبحث في القوائم
         document.getElementById('pwaInstallBanner').style.display = 'block';
     });
 
@@ -161,7 +170,6 @@
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
-                    console.log('وافق المستخدم على تثبيت نظام عيادة هلا');
                     document.getElementById('pwaInstallBanner').style.display = 'none';
                 }
                 deferredPrompt = null;
@@ -169,15 +177,13 @@
         }
     }
 
-    // فحص اكتمال التثبيت لإخفاء البنر تلقائياً
     window.addEventListener('appinstalled', (evt) => {
-        console.log('تم تثبيت بوابة هلا سيستم بنجاح كلي على الهاتف');
         document.getElementById('pwaInstallBanner').style.display = 'none';
     });
 
     function getFirebaseTargetUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const clinicId = urlParams.get('clinic');
+        // استدعاء المعرف النظيف والمحمي من الذاكرة المحلية الحتمية للهاتف
+        const clinicId = localStorage.getItem('saved_clinic_id');
         const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
 
         if (clinicId && clinicId.trim() !== "") {
@@ -236,7 +242,7 @@
         } catch (error) {
             statusDiv.style.display = "block";
             statusDiv.style.color = "red";
-            statusDiv.innerText = "❌ فشل الاتصال بالسحاب, يرجى التحقق من الإنترنت.";
+            statusDiv.innerText = "❌ فشل الاتصال بالسحاب، يرجى التحقق من الإنترنت.";
         } finally {
             btn.disabled = false;
             btn.innerText = "تأكيد وإرسال الحجز ⚡";
