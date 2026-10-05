@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الحجز المباشر 🩺</title>
+    <!-- استدعاء ملف الـ Manifest بشكل مطلق ومستقر برمجياً -->
     <link rel="manifest" href="manifest.json">
     <style>
         body {
@@ -68,6 +69,7 @@
             font-weight: bold;
             display: none;
         }
+        /* بنر التثبيت التلقائي الجذاب والفريد المخصص للنسخة التجارية */
         .install-banner {
             background-color: #1e293b;
             color: white;
@@ -93,6 +95,7 @@
 <body>
 
 <div class="container">
+    <!-- البنر التجاري الذكي: يظهر مجبراً أمام المستخدم بمجرد قراءة الباركود للتثبيت بنقرة واحدة -->
     <div id="pwaInstallBanner" class="install-banner" onclick="triggerPwaInstallation()">
         📲 اضغط هنا لتثبيت تطبيق "بوابة هلا سيستم" على هاتفكم فوراً ⚡
     </div>
@@ -133,30 +136,44 @@
 </div>
 
 <script>
-    let deferredPrompt;
+    // 🚀 [خوارزمية الحسم والقاطع أمنياً]: معالجة الرابط والقفز التلقائي إلى المتصفح الرسمي للجهاز لمنع الحظر
+    (function handleUrlSanitizationAndIntent() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const clinicId = urlParams.get('clinic');
+        
+        // التقاط البيئات المعزولة داخل برامج المسح والكاميرات الافتراضية
+        const isWebView = /FBAN|FBAV|Instagram|LinkedIn|Twitter|MicroMessenger|WebView|wv/i.test(navigator.userAgent);
+        
+        if (clinicId && clinicId.trim() !== "") {
+            localStorage.setItem('saved_clinic_id', clinicId.trim());
+            
+            // إذا تم الفتح من مستعرض كاميرا داخلي، نجبر أندرويد على القفز الفوري لمتصفح كروم الرسمي
+            if (isWebView && navigator.userAgent.match(/Android/i)) {
+                const pureUrl = window.location.origin + window.location.pathname;
+                window.location.href = "intent://" + pureUrl.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;end";
+                return;
+            }
+            
+            // تنظيف شريط العنوان للمستخدم العادي من علامات الاستفهام لتلبية شروط جوجل الأمنية
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    })();
 
-    // خوارزمية العزل والتطهير الذاتي الفورية مضافة قبل أي استدعاء أمني
-    const urlParams = new URLSearchParams(window.location.search);
-    const clinicId = urlParams.get('clinic');
-    if (clinicId && clinicId.trim() !== "") {
-        localStorage.setItem('saved_clinic_id', clinicId.trim());
-        // تنظيف شريط العنوان فوراً والتحول إلى النطاق النقي المستقر المتوافق مع Google
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    // تسجيل الـ Service Worker بالنطاق المطلق والأصيل
+    // تسجيل محرك الخدمة (Service Worker) بالمسار الجغرافي النقي لضمان استقرار التثبيت
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/hala-booking-gate/sw.js', { scope: '/hala-booking-gate/' })
-            .then(reg => {
-                console.log('Absolute Service Worker Active');
-                // إجبار المحرك على التحديث الفوري
-                reg.update();
-            })
-            .catch(err => console.log('Registration Failed', err));
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker Registered'))
+                .catch(err => console.log('Service Worker Failed', err));
+        });
     }
 
-    // التقاط حدث التثبيت التلقائي الحتمي فور تطهير النطاق
+    let deferredPrompt;
+    
+    // المحرك الذكي لالتقاط إمكانية التثبيت الفوري وإظهار البنر الملون أمام المستخدم مجبراً
     window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('حدث التثبيت التلقائي التقط بنجاح');
         e.preventDefault();
         deferredPrompt = e;
         document.getElementById('pwaInstallBanner').style.display = 'block';
@@ -167,6 +184,7 @@
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
+                    console.log('وافق المستخدم على التثبيت');
                     document.getElementById('pwaInstallBanner').style.display = 'none';
                 }
                 deferredPrompt = null;
@@ -179,9 +197,13 @@
     });
 
     function getFirebaseTargetUrl() {
-        const savedClinic = localStorage.getItem('saved_clinic_id') || 'Clinic_Default_Test';
+        let clinicId = localStorage.getItem('saved_clinic_id');
         const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
-        return `${baseFirebaseUrl}/clinics/${savedClinic}.json`;
+
+        if (clinicId && clinicId.trim() !== "") {
+            return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
+        }
+        return `${baseFirebaseUrl}/clinics/Clinic_Default_Test.json`;
     }
 
     async function sendAppointmentToCloud() {
@@ -200,6 +222,7 @@
             return;
         }
 
+        // إلزام المتصفح بإرسال حقل الحالة بـ "حجز مؤكد" لتطابق حسابات الخزينة والايرادات
         const appointmentData = {
             PatientName: name,
             Age: age ? age : "0",
@@ -229,7 +252,7 @@
                 document.getElementById("txtPhone").value = "";
                 document.getElementById("txtAddress").value = "";
             } else {
-                throw new Error("فشل الاستجابة");
+                throw new Error("فشل الاستجابة من السيرفر");
             }
         } catch (error) {
             statusDiv.style.display = "block";
