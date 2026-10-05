@@ -156,7 +156,9 @@
     function getFirebaseTargetUrl() {
         const urlParams = new URLSearchParams(window.location.search);
         const clinicId = urlParams.get('clinic');
-        const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com/";
+        
+        // 🚀 [تصحيح حاسم]: إزالة علامة الـ (/) من نهاية الرابط لمنع تشويه الاندماج بالخلفية المزدوجة
+        const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
 
         if (clinicId && clinicId.trim() !== "") {
             return `${baseFirebaseUrl}/clinics/${clinicId.trim()}.json`;
@@ -215,7 +217,7 @@
         } catch (error) {
             statusDiv.style.display = "block";
             statusDiv.style.color = "red";
-            statusDiv.innerText = "❌ فشل الاتصال بالسحاب، يرجى التحقق من الإنترنت.";
+            statusDiv.innerText = "❌ فشل الاتصال بالسحاب, يرجى التحقق من الإنترنت.";
         } finally {
             btn.disabled = false;
             btn.innerText = "تأكيد وإرسال الحجز ⚡";
