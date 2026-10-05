@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الحجز المباشر 🩺</title>
-    <!-- استدعاء ملف الـ Manifest بشكل مطلق ومستقر برمجياً -->
+    <title>HALA Clinic System - Mobile Gate</title>
+    <!-- 🚀 Connect PWA Web Manifest -->
     <link rel="manifest" href="manifest.json">
     <style>
         body {
@@ -32,12 +32,14 @@
         }
         .form-group {
             margin-bottom: 18px;
+            direction: rtl;
         }
         label {
             display: block;
             font-weight: bold;
             margin-bottom: 8px;
             color: #2c3e50;
+            text-align: right;
         }
         input, select {
             width: 100%;
@@ -46,6 +48,7 @@
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
+            text-align: right;
         }
         button {
             width: 100%;
@@ -69,17 +72,17 @@
             font-weight: bold;
             display: none;
         }
-        /* بنر التثبيت التلقائي الجذاب والفريد المخصص للنسخة التجارية */
-        .install-banner {
+        /* 🚀 One-Click Global Native Installer Button Styling */
+        .pwa-install-btn {
             background-color: #1e293b;
-            color: white;
-            padding: 15px;
+            color: #ffffff;
+            padding: 14px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: center;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
-            display: none;
+            display: none; /* Appears instantly when system is ready */
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             border: 2px solid #10b981;
@@ -87,7 +90,7 @@
         }
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+            50% { transform: scale(1.03); }
             100% { transform: scale(1); }
         }
     </style>
@@ -95,12 +98,12 @@
 <body>
 
 <div class="container">
-    <!-- البنر التجاري الذكي: يظهر مجبراً أمام المستخدم بمجرد قراءة الباركود للتثبيت بنقرة واحدة -->
-    <div id="pwaInstallBanner" class="install-banner" onclick="triggerPwaInstallation()">
-        📲 اضغط هنا لتثبيت تطبيق "بوابة هلا سيستم" على هاتفكم فوراً ⚡
+    <!-- 🚀 Global Commercial One-Click Instant Installer Action Button -->
+    <div id="btnHalaPwaInstall" class="pwa-install-btn" onclick="executeNativePwaInstallation()">
+        📲 Click Here to Install "HALA Clinic System" App on Your Screen ⚡
     </div>
 
-    <h2>طلب حجز موعد جديد 🩺</h2>
+    <h2>HALA Clinic System 🩺</h2>
     
     <div class="form-group">
         <label for="txtPatientName">اسم المريض الكامل:</label>
@@ -136,68 +139,42 @@
 </div>
 
 <script>
-    // 🚀 [خوارزمية الحسم والقاطع أمنياً]: معالجة الرابط والقفز التلقائي إلى المتصفح الرسمي للجهاز لمنع الحظر
-    (function handleUrlSanitizationAndIntent() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const clinicId = urlParams.get('clinic');
-        
-        // التقاط البيئات المعزولة داخل برامج المسح والكاميرات الافتراضية
-        const isWebView = /FBAN|FBAV|Instagram|LinkedIn|Twitter|MicroMessenger|WebView|wv/i.test(navigator.userAgent);
-        
-        if (clinicId && clinicId.trim() !== "") {
-            localStorage.setItem('saved_clinic_id', clinicId.trim());
-            
-            // إذا تم الفتح من مستعرض كاميرا داخلي، نجبر أندرويد على القفز الفوري لمتصفح كروم الرسمي
-            if (isWebView && navigator.userAgent.match(/Android/i)) {
-                const pureUrl = window.location.origin + window.location.pathname;
-                window.location.href = "intent://" + pureUrl.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;end";
-                return;
-            }
-            
-            // تنظيف شريط العنوان للمستخدم العادي من علامات الاستفهام لتلبية شروط جوجل الأمنية
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
-        }
-    })();
-
-    // تسجيل محرك الخدمة (Service Worker) بالمسار الجغرافي النقي لضمان استقرار التثبيت
+    // Register Background Service Worker Engine
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker Registered'))
-                .catch(err => console.log('Service Worker Failed', err));
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
         });
     }
 
-    let deferredPrompt;
+    let pwaInstallationPrompt;
     
-    // المحرك الذكي لالتقاط إمكانية التثبيت الفوري وإظهار البنر الملون أمام المستخدم مجبراً
+    // Capturing Google Native Installation Engine Event For One-Click Launch
     window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('حدث التثبيت التلقائي التقط بنجاح');
         e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('pwaInstallBanner').style.display = 'block';
+        pwaInstallationPrompt = e;
+        // Instantly force the English action button to appear inside the screen UI
+        document.getElementById('btnHalaPwaInstall').style.display = 'block';
     });
 
-    function triggerPwaInstallation() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
+    function executeNativePwaInstallation() {
+        if (pwaInstallationPrompt) {
+            pwaInstallationPrompt.prompt();
+            pwaInstallationPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
-                    console.log('وافق المستخدم على التثبيت');
-                    document.getElementById('pwaInstallBanner').style.display = 'none';
+                    document.getElementById('btnHalaPwaInstall').style.display = 'none';
                 }
-                deferredPrompt = null;
+                pwaInstallationPrompt = null;
             });
         }
     }
 
     window.addEventListener('appinstalled', (evt) => {
-        document.getElementById('pwaInstallBanner').style.display = 'none';
+        document.getElementById('btnHalaPwaInstall').style.display = 'none';
     });
 
     function getFirebaseTargetUrl() {
-        let clinicId = localStorage.getItem('saved_clinic_id');
+        const urlParams = new URLSearchParams(window.location.search);
+        const clinicId = urlParams.get('clinic');
         const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
 
         if (clinicId && clinicId.trim() !== "") {
@@ -222,7 +199,6 @@
             return;
         }
 
-        // إلزام المتصفح بإرسال حقل الحالة بـ "حجز مؤكد" لتطابق حسابات الخزينة والايرادات
         const appointmentData = {
             PatientName: name,
             Age: age ? age : "0",
@@ -233,7 +209,7 @@
         };
 
         btn.disabled = true;
-        btn.innerText = "جاري إرسال البيانات...";
+        btn.innerText = "Processing Cloud Sync...";
 
         try {
             const response = await fetch(firebaseURL, {
@@ -245,19 +221,19 @@
             if (response.ok) {
                 statusDiv.style.display = "block";
                 statusDiv.style.color = "green";
-                statusDiv.innerText = "✨ تم إرسال الحجز بنجاح! سيظهر في طابور العيادة فوراً.";
+                statusDiv.innerText = "✨ Appointment Sent Successfully to HALA Clinic System!";
                 
                 document.getElementById("txtPatientName").value = "";
                 document.getElementById("txtAge").value = "";
                 document.getElementById("txtPhone").value = "";
                 document.getElementById("txtAddress").value = "";
             } else {
-                throw new Error("فشل الاستجابة من السيرفر");
+                throw new Error("Cloud Refused Connection");
             }
         } catch (error) {
             statusDiv.style.display = "block";
             statusDiv.style.color = "red";
-            statusDiv.innerText = "❌ فشل الاتصال بالسحاب، يرجى التحقق من الإنترنت.";
+            statusDiv.innerText = "❌ Sync Failed! Please Check Internet Connection.";
         } finally {
             btn.disabled = false;
             btn.innerText = "تأكيد وإرسال الحجز ⚡";
