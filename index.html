@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الحجز المباشر 🩺</title>
-    <!-- 🚀 ربط ملف هوية التطبيق لتنشيط التثبيت التلقائي الصامت -->
+    <!-- 🚀 استدعاء الـ Manifest بشكل معزول ومستقر برمجياً -->
     <link rel="manifest" href="manifest.json">
     <style>
         body {
@@ -69,28 +69,35 @@
             font-weight: bold;
             display: none;
         }
-        /* زر التثبيت التلقائي الجذاب PWA */
+        /* 🚀 بنر التثبيت التلقائي الجذاب والفريد المخصص للنسخة التجارية */
         .install-banner {
             background-color: #1e293b;
             color: white;
-            padding: 12px;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
             font-size: 14px;
             font-weight: bold;
-            display: none;
+            display: none; /* مخفي افتراضياً ويظهر حتمياً عند التقاط المتصفح */
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 2px solid #10b981;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- 🚀 بنر ذكي يظهر تلقائياً ويقترح تثبيت التطبيق بضغطة واحدة -->
+    <!-- 🚀 البنر التجاري الذكي: سيظهر مجبراً أمام السكرتير بمجرد قراءة الباركود للتثبيت بنقرة واحدة -->
     <div id="pwaInstallBanner" class="install-banner" onclick="triggerPwaInstallation()">
-        📲 اضغط هنا لتثبيت تطبيق بوابة الحجز على هاتفكم فوراً ⚡
+        📲 اضغط هنا لتثبيت تطبيق "بوابة هلا سيستم" على هاتفكم فوراً ⚡
     </div>
 
     <h2>طلب حجز موعد جديد 🩺</h2>
@@ -129,15 +136,23 @@
 </div>
 
 <script>
-    // 🚀 تسجيل محرك التثبيت الصامت تلقائياً بمجرد فتح المتصفح
+    // 🚀 تسجيل محرك الخدمة (Service Worker) بالمسار الجغرافي النقي لضمان استقرار التثبيت
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker Registered'))
+                .catch(err => console.log('Service Worker Failed', err));
+        });
     }
 
     let deferredPrompt;
+    
+    // 🚀 المحرك الذكي لالتقاط إمكانية التثبيت الفوري وإظهار البنر الملون أمام المستخدم مجبراً
     window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('beforeinstallprompt المجهر البرمجي التقط حدث التثبيت');
         e.preventDefault();
         deferredPrompt = e;
+        // إظهار البنر فوراً في واجهة المستخدم دون الحاجة للبحث في القوائم
         document.getElementById('pwaInstallBanner').style.display = 'block';
     });
 
@@ -146,6 +161,7 @@
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
+                    console.log('وافق المستخدم على تثبيت نظام عيادة هلا');
                     document.getElementById('pwaInstallBanner').style.display = 'none';
                 }
                 deferredPrompt = null;
@@ -153,11 +169,15 @@
         }
     }
 
+    // فحص اكتمال التثبيت لإخفاء البنر تلقائياً
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('تم تثبيت بوابة هلا سيستم بنجاح كلي على الهاتف');
+        document.getElementById('pwaInstallBanner').style.display = 'none';
+    });
+
     function getFirebaseTargetUrl() {
         const urlParams = new URLSearchParams(window.location.search);
         const clinicId = urlParams.get('clinic');
-        
-        // 🚀 [تصحيح حاسم]: إزالة علامة الـ (/) من نهاية الرابط لمنع تشويه الاندماج بالخلفية المزدوجة
         const baseFirebaseUrl = "https://halaclinicdb-default-rtdb.firebaseio.com";
 
         if (clinicId && clinicId.trim() !== "") {
@@ -182,7 +202,6 @@
             return;
         }
 
-        // 🚀 [الحقن الصارم]: إلزام المتصفح بإرسال حقل الحالة بـ "حجز مؤكد" لتطابق حسابات الخزينة
         const appointmentData = {
             PatientName: name,
             Age: age ? age : "0",
