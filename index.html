@@ -76,7 +76,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').the
 if(userRole==='secretary'){
 document.getElementById('waAutoBtn').style.display='block';
 }
-verifyClientPreviousBookingStatus();fetchClinicDataAndMetadata();
+fetchClinicDataAndMetadata();
 };
 window.addEventListener('beforeinstallprompt',(e)=>{
 e.preventDefault();deferredPrompt=e;
@@ -96,14 +96,6 @@ const appUrl=`https://github.io{clinicId}`;
 const msg=`مرحباً بك في بوابة الحجز الإلكتروني الموحدة لعيادتنا الموقرة 🩺✨\n\nلتوفير وقتك وتجنب الانتظار الطويل، يمكنك الآن الحجز بنفسك ومعرفة تسلسلك الفوري في الطابور الموحد على مدار 24 ساعة.\n\n1️⃣ [للحجز الذاتي الفوري ومعرفة رقمك] ⚡:\nانقر على الرابط الآمن التالي واكتب اسمك الثلاثي:\n👇👇👇\n${appUrl}\n\n2️⃣ [للتحدث مع السكرتارية أو الاستفسار] 👤:\nاكتب تفاصيل استفسارك في رسالة واحدة هنا، وسيقوم السكرتير بالرد عليك فور بدء الدوام الرسمي للعيادة.\n\nنتمنى لكم دوام الصحة والعافية 🌸`;
 const waIntentUrl=`whatsapp://biz_settings_greeting?text=${encodeURIComponent(msg)}`;
 window.location.href=waIntentUrl;
-}
-function verifyClientPreviousBookingStatus(){
-if(userRole==='secretary') return;
-const lastBookingDate=localStorage.getItem(`Hala_Block_${clinicId}`);
-const todayStr=new Date().toLocaleDateString('en-CA');
-if(lastBookingDate===todayStr){
-document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#fef2f2;color:#b91c1c;border-radius:8px;font-weight:bold;">⚠️ حظر التكرار: لقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح!</div>`;
-}
 }
 async function fetchClinicDataAndMetadata(){
 try{
@@ -151,10 +143,6 @@ const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:addres
 try{
 const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
 if(response.ok){
-if(userRole!=='secretary'){
-const todayStr=new Date().toLocaleDateString('en-CA');
-localStorage.setItem(`Hala_Block_${clinicId}`,todayStr);
-}
 alert("🎉 تم تسجيل الحجز بنجاح وبسرعة البرق!");
 document.getElementById('txtPatientName').value='';
 document.getElementById('txtPatientAge').value='';
