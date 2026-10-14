@@ -15,7 +15,7 @@ h2{color:var(--p-color);margin-top:0;font-size:22px;}
 label{display:block;margin-bottom:5px;font-weight:bold;color:#475569;font-size:14px;}
 input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:15px;}
 button{width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s;}
-button:hover {background:#059669;}
+button:hover{background:#059669;}
 button:disabled{background:#cbd5e1;cursor:not-allowed;}
 .footer-note{font-size:11px;color:#94a3b8;margin-top:25px;}
 </style>
@@ -23,9 +23,9 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 <body>
 <div class="card">
 <h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
-<p style="color:#64748b;font-size:13px;" id="lblClinicPhone">الهاتف: جاري المزامنة مع المنظومة...</p>
+<p style="color:#64748b;font-size:13px;" id="lblClinicPhone">نظام الحجز الذاتي المشترك</p>
 <div class="status-box">
-<div id="queueInfo">وضع الحجز الافتراضي: متصل بالسحاب ⚡</div>
+<div id="queueInfo">حالة الاتصال: متصل بالسحاب للعيادة ⚡</div>
 <div id="expectedSeq" style="margin-top:8px;color:#10b981;font-size:17px;">التسلسل المتاح للحجز الآن: [ جاري الحساب ]</div>
 </div>
 <div id="bookingForm">
@@ -64,16 +64,16 @@ const firebaseBaseUrl=p1+p2+p3+p4;
 let currentLiveMaxSeq=0;let expectedNextSeq=1;
 let deferredPrompt;
 window.onload=function(){
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(()=>{console.log("SW Registered");}).catch(err=>console.log(err));}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(()=>{console.log("SW OK");}).catch(err=>console.log(err));}
 verifyClientPreviousBookingStatus();fetchClinicDataAndMetadata();
 };
 window.addEventListener('beforeinstallprompt',(e)=>{
 e.preventDefault();deferredPrompt=e;
-setTimeout(()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then((choiceResult)=>{if(choiceResult.outcome==='accepted'){console.log('Installed');}deferredPrompt=null;});}},1000);
+setTimeout(()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then((res)=>{deferredPrompt=null;});}},1500);
 });
-function verifyClientPreviousBookingStatus(){const lastBookingDate=localStorage.getItem(`Hala_Block_${clinicId}`);const todayStr=new Date().toLocaleDateString('en-CA');if(lastBookingDate===todayStr){document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#fef2f2;color:#b91c1c;border-radius:8px;font-weight:bold;">⚠️ حظر التكرار: لقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح! لا يمكن حجز مقعدين في نفس الوقت.</div>`;}}
-async function fetchClinicDataAndMetadata(){try{const metaResponse=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);if(metaResponse.ok){const metaData=await metaResponse.json();if(metaData){document.getElementById('lblClinicName').innerText=metaData.ClinicName||"العيادة الطبية التخصصية";document.getElementById('lblClinicPhone').innerText=`رقم الحجز والدعم: ${metaData.ClinicPhone||'---'}`;currentLiveMaxSeq=parseInt(metaData.LiveCurrentMaxSeq)||0;}}const appointmentsResponse=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`);let floatingNightAppointmentsCount=0;if(appointmentsResponse.ok){const allData=await appointmentsResponse.json();if(allData){floatingNightAppointmentsCount=Object.keys(allData).filter(key=>key!=='ClinicMetadata').length;}}const currentHour=new Date().getHours();if(currentHour>=0&&currentHour<8){document.getElementById('queueInfo').innerText="وضع الحجز: العيادة مغلقة حالياً - يتم الجدولة لليوم التالي 🗓️";}else{document.getElementById('queueInfo').innerText=`طابور الانتظار نشط ومحمي سحابياً 🔒`;}expectedNextSeq=currentLiveMaxSeq+floatingNightAppointmentsCount+1;document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;}catch(error){expectedNextSeq=1;document.getElementById('expectedSeq').innerText=`التسلسل المتاح للحجز الآن: (1)`;}}
-async function executeSecureClientBooking(){const name=document.getElementById('txtPatientName').value.trim();const age=document.getElementById('txtPatientAge').value.trim();const gender=document.getElementById('cbPatientGender').value;const phone=document.getElementById('txtPatientPhone').value.trim();const address=document.getElementById('txtPatientAddress').value.trim();if(!name||name.length<6){alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");return;}if(!age||age<1||age>110){alert("يرجى إدخال عمر صحيح.");return;}if(!phone||phone.length<10){alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام على الأقل.");return;}document.getElementById('btnSubmitBooking').disabled=true;document.getElementById('btnSubmitBooking').innerText="⏳ جاري تشفير وحفظ مقعدك بالخزينة السحابية...";const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير محدد",Timestamp:new Date().toISOString()};try{const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(response.ok){const todayStr=new Date().toLocaleDateString('en-CA');localStorage.setItem(`Hala_Block_${clinicId}`,todayStr);document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#d1fae5;color:#065f46;border-radius:8px;font-weight:bold;margin-bottom:15px;">🎉 تم تثبيت وتأكيد حجزك بنجاح في العيادة!<br>رقمك المخصص في طابور الانتظار هو: [ ${expectedNextSeq} ]</div><p style="font-size:13px;color:#4b5563;">يرجى التقاط لقطة شاشة (Screenshot) لشاشتك الحالية وإبرازها للسكرتير عند وصولك للعيادة.</p>`;}else{throw new Error("فشل الاستجابة");}}catch(error){alert("حدث خطأ، يرجى إعادة المحاولة.");document.getElementById('btnSubmitBooking').disabled=false;document.getElementById('btnSubmitBooking').innerText="⚡ تثبيت وتأكيد الحجز الفوري";}}
+function verifyClientPreviousBookingStatus(){const lastBookingDate=localStorage.getItem(`Hala_Block_${clinicId}`);const todayStr=new Date().toLocaleDateString('en-CA');if(lastBookingDate===todayStr){document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#fef2f2;color:#b91c1c;border-radius:8px;font-weight:bold;">⚠️ حظر التكرار: لقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح!</div>`;}}
+async function fetchClinicDataAndMetadata(){try{const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`);if(response.ok){const allData=await response.json();let count=0;if(allData){count=Object.keys(allData).length;currentLiveMaxSeq=count;}expectedNextSeq=currentLiveMaxSeq+1;document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;}}catch(e){document.getElementById('expectedSeq').innerText=`التسلسل المتاح للحجز الآن: (1)`;}}
+async function executeSecureClientBooking(){const name=document.getElementById('txtPatientName').value.trim();const age=document.getElementById('txtPatientAge').value.trim();const gender=document.getElementById('cbPatientGender').value;const phone=document.getElementById('txtPatientPhone').value.trim();const address=document.getElementById('txtPatientAddress').value.trim();if(!name||name.length<6){alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");return;}if(!age||age<1||age>110){alert("يرجى إدخال عمر صحيح.");return;}if(!phone||phone.length<10){alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام.");return;}document.getElementById('btnSubmitBooking').disabled=true;document.getElementById('btnSubmitBooking').innerText="⏳ جاري حفظ مقعدك سحابياً...";const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير محدد",Timestamp:new Date().toISOString()};try{const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(response.ok){const todayStr=new Date().toLocaleDateString('en-CA');localStorage.setItem(`Hala_Block_${clinicId}`,todayStr);document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#d1fae5;color:#065f46;border-radius:8px;font-weight:bold;margin-bottom:15px;">🎉 تم تثبيت وتأكيد حجزك بنجاح في العيادة!<br>رقمك المخصص في طابور الانتظار هو: [ ${expectedNextSeq} ]</div>`;}else{throw new Error("Error");}}catch(error){alert("حدث خطأ، يرجى إعادة المحاولة.");document.getElementById('btnSubmitBooking').disabled=false;document.getElementById('btnSubmitBooking').innerText="⚡ تثبيت وتأكيد الحجز الفوري";}}
 </script>
 </body>
 </html>
