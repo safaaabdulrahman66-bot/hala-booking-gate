@@ -132,11 +132,10 @@ if(!age||age<1||age>110){alert("يرجى إدخال عمر صحيح.");return;}
 if(!phone||phone.length<10){alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام.");return;}
 document.getElementById('btnSubmitBooking').disabled=true;
 document.getElementById('btnSubmitBooking').innerText="⏳ جاري حفظ مقعدك سحابياً...";
-const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير محدد",Timestamp:new Date().toISOString()};
+const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير حدد",Timestamp:new Date().toISOString()};
 try{
 const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
 if(response.ok){
-try{localStorage.clear();}catch(ex){}
 alert("🎉 تم تسجيل الحجز بنجاح وبسرعة البرق!");
 document.getElementById('txtPatientName').value='';
 document.getElementById('txtPatientAge').value='';
