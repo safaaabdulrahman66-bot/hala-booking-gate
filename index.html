@@ -70,12 +70,10 @@ const p1="ht"+"tps:/";const p2="/halac"+"linicdb-de";const p3="fault-r"+"tdb.fi"
 const firebaseBaseUrl=p1+p2+p3+p4;
 let currentLiveMaxSeq=0;let expectedNextSeq=1;
 let deferredPrompt;
-let currentClinicRealName="العيادة الطبية التخصصية";
 window.onload=function(){
+localStorage.clear();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(()=>{console.log("SW OK");}).catch(err=>console.log(err));}
-if(userRole==='secretary'){
-document.getElementById('waAutoBtn').style.display='block';
-}
+if(userRole==='secretary'){document.getElementById('waAutoBtn').style.display='block';}
 fetchClinicDataAndMetadata();
 };
 window.addEventListener('beforeinstallprompt',(e)=>{
@@ -117,10 +115,7 @@ count=0;
 expectedNextSeq=count+1;
 document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;
 if(allData&&allData.ClinicMetadata){
-if(allData.ClinicMetadata.ClinicName){
-currentClinicRealName=allData.ClinicMetadata.ClinicName;
-document.getElementById('lblClinicName').innerText=currentClinicRealName;
-}
+if(allData.ClinicMetadata.ClinicName)document.getElementById('lblClinicName').innerText=allData.ClinicMetadata.ClinicName;
 if(allData.ClinicMetadata.ClinicPhone)document.getElementById('lblClinicPhone').innerText=`رقم الحجز: `+allData.ClinicMetadata.ClinicPhone;
 }
 }
