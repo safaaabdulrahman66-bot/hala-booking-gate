@@ -71,7 +71,7 @@ const firebaseBaseUrl=p1+p2+p3+p4;
 let currentLiveMaxSeq=0;let expectedNextSeq=1;
 let deferredPrompt;
 window.onload=function(){
-localStorage.clear();
+try{localStorage.clear();}catch(e){}
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(()=>{console.log("SW OK");}).catch(err=>console.log(err));}
 if(userRole==='secretary'){document.getElementById('waAutoBtn').style.display='block';}
 fetchClinicDataAndMetadata();
@@ -97,30 +97,28 @@ window.location.href=waIntentUrl;
 }
 async function fetchClinicDataAndMetadata(){
 try{
+const metaRes=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);
+if(metaRes.ok){
+const metaData=await metaRes.json();
+if(metaData && metaData.LiveCurrentMaxSeq !== undefined){
+currentLiveMaxSeq=parseInt(metaData.LiveCurrentMaxSeq)||0;
+if(metaData.ClinicName)document.getElementById('lblClinicName').innerText=metaData.ClinicName;
+if(metaData.ClinicPhone)document.getElementById('lblClinicPhone').innerText=`رقم الحجز: `+metaData.ClinicPhone;
+}
+}
 const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`);
+let floatingRecords=0;
 if(response.ok){
 const allData=await response.json();
-let count=0;
 if(allData){
-if(allData.ClinicMetadata&&allData.ClinicMetadata.LiveCurrentMaxSeq){
-currentLiveMaxSeq=parseInt(allData.ClinicMetadata.LiveCurrentMaxSeq)||0;
-}else{
-currentLiveMaxSeq=0;
+floatingRecords=Object.keys(allData).filter(k=>k!=='ClinicMetadata').length;
 }
-const floatingRecords=Object.keys(allData).filter(k=>k!=='ClinicMetadata').length;
-count=currentLiveMaxSeq+floatingRecords;
-}else{
-count=0;
 }
-expectedNextSeq=count+1;
+expectedNextSeq=currentLiveMaxSeq+floatingRecords+1;
 document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;
-if(allData&&allData.ClinicMetadata){
-if(allData.ClinicMetadata.ClinicName)document.getElementById('lblClinicName').innerText=allData.ClinicMetadata.ClinicName;
-if(allData.ClinicMetadata.ClinicPhone)document.getElementById('lblClinicPhone').innerText=`رقم الحجز: `+allData.ClinicMetadata.ClinicPhone;
-}
-}
 }catch(e){
-document.getElementById('expectedSeq').innerText=`التسلسل المتاح للحجز الآن: (1)`;
+expectedNextSeq=currentLiveMaxSeq+1;
+document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;
 }
 }
 async function executeSecureClientBooking(){
@@ -138,6 +136,7 @@ const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:addres
 try{
 const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
 if(response.ok){
+try{localStorage.clear();}catch(ex){}
 alert("🎉 تم تسجيل الحجز بنجاح وبسرعة البرق!");
 document.getElementById('txtPatientName').value='';
 document.getElementById('txtPatientAge').value='';
