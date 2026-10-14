@@ -1,256 +1,71 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HALA Clinic System - Mobile Gate</title>
-    <!-- 🚀 Connect PWA Web Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 {
-            text-align: center;
-            color: #1e222d;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 18px;
-            direction: rtl;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            text-align: right;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            text-align: right;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #10b981;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #059669;
-        }
-        .status-msg {
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-            display: none;
-        }
-        /* One-Click Global Native Installer Button Styling */
-        .pwa-install-btn {
-            background-color: #1e293b;
-            color: #ffffff;
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: bold;
-            display: none;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            border: 2px solid #10b981;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بوابة الحجز الإلكتروني الذكي</title>
+<style>
+:root{--p-color:#1e293b;--s-color:#0f172a;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8fafc;margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);width:100%;max-width:440px;text-align:center;border:2px solid #e2e8f0;}
+h2{color:var(--p-color);margin-top:0;font-size:22px;}
+.status-box{background:#f1f5f9;padding:15px;border-radius:8px;margin:20px 0;font-weight:bold;color:#334155;border-right:5px solid #3b82f6;text-align:right;}
+.form-group{margin-bottom:15px;text-align:right;}
+label{display:block;margin-bottom:5px;font-weight:bold;color:#475569;font-size:14px;}
+input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:15px;}
+button{width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s;}
+button:hover{background:#059669;}
+button:disabled{background:#cbd5e1;cursor:not-allowed;}
+.footer-note{font-size:11px;color:#94a3b8;margin-top:25px;}
+</style>
 </head>
 <body>
-
-<div class="container">
-    <!-- Global Commercial One-Click Instant Installer Action Button -->
-    <div id="btnHalaPwaInstall" class="pwa-install-btn" onclick="executeNativePwaInstallation()">
-        📲 Click Here to Install "HALA Clinic System" App on Your Screen ⚡
-    </div>
-
-    <h2>HALA Clinic System 🩺</h2>
-    
-    <div class="form-group">
-        <label for="txtPatientName">اسم المريض الكامل:</label>
-        <input type="text" id="txtPatientName" placeholder="أدخل الاسم الثلاثي">
-    </div>
-
-    <div class="form-group">
-        <label for="txtAge">العمر:</label>
-        <input type="number" id="txtAge" placeholder="مثال: 30">
-    </div>
-
-    <div class="form-group">
-        <label for="cbGender">الجنس:</label>
-        <select id="cbGender">
-            <option value="ذكر">ذكر</option>
-            <option value="أنثى">أنثى</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="txtPhone">رقم الهاتف:</label>
-        <input type="tel" id="txtPhone" placeholder="07xxxxxxxx">
-    </div>
-
-    <div class="form-group">
-        <label for="txtAddress">العنوان / السكن:</label>
-        <input type="text" id="txtAddress" placeholder="المحافظة / المنطقة">
-    </div>
-
-    <button id="btnSubmit" onclick="sendAppointmentToCloud()">تأكيد وإرسال الحجز ⚡</button>
-    
-    <div id="statusMessage" class="status-msg"></div>
+<div class="card">
+<h2 id="lblClinicName">⏳ جاري تحميل بيانات العيادة...</h2>
+<p style="color:#64748b;font-size:13px;" id="lblClinicPhone">الهاتف: ---</p>
+<div class="status-box">
+<div id="queueInfo">حالة الطابور: جاري فحص الإشغال الموحد...</div>
+<div id="expectedSeq" style="margin-top:8px;color:#10b981;font-size:17px;">التسلسل المتاح للحجز الآن: --</div>
 </div>
-
+<div id="bookingForm">
+<div class="form-group">
+<label>اسم المراجع الثلاثي الكامِل:</label>
+<input type="text" id="txtPatientName" placeholder="اكتب اسمك هنا للعيادة...">
+</div>
+<div class="form-group">
+<label>العمر:</label>
+<input type="number" id="txtPatientAge" placeholder="العمر..">
+</div>
+<div class="form-group">
+<label>الجنس:</label>
+<select id="cbPatientGender">
+<option value="ذكر">ذكر</option>
+<option value="أنثى">أنثى</option>
+</select>
+</div>
+<div class="form-group">
+<label>رقم هاتف المراجع للتواصل:</label>
+<input type="tel" id="txtPatientPhone" placeholder="07xxxxxxxxx">
+</div>
+<div class="form-group">
+<label>العنوان / السكن:</label>
+<input type="text" id="txtPatientAddress" placeholder="المحافظة / المنطقة">
+</div>
+<button id="btnSubmitBooking" onclick="executeSecureClientBooking()">⚡ تثبيت وتأكيد الحجز الفوري</button>
+</div>
+<div class="footer-note">نظام الحجز الذاتي السحابي المشترك © HALA Clinic System</div>
+</div>
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-        });
-    }
-
-    let pwaInstallationPrompt;
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        pwaInstallationPrompt = e;
-        document.getElementById('btnHalaPwaInstall').style.display = 'block';
-    });
-
-    function executeNativePwaInstallation() {
-        if (pwaInstallationPrompt) {
-            pwaInstallationPrompt.prompt();
-            pwaInstallationPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    document.getElementById('btnHalaPwaInstall').style.display = 'none';
-                }
-                pwaInstallationPrompt = null;
-            });
-        }
-    }
-
-    window.addEventListener('appinstalled', (evt) => {
-        document.getElementById('btnHalaPwaInstall').style.display = 'none';
-    });
-
-    // 🚀 [هندسة التلقيم الذكي للنسخة التجارية]: التقاط وحفظ المعرّف حتمياً ومن أول تثبيت
-    function getFirebaseTargetUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let clinicId = urlParams.get('clinic');
-
-        // إذا وجد المعرّف في الرابط (عند مسح الباركود أول مرة)، يحفظه فوراً في ذاكرة الهاتف المستديمة
-        if (clinicId && clinicId.trim() !== "") {
-            localStorage.setItem('HalaSavedClinicID', clinicId.trim());
-        } else {
-            // إذا فتح السكرتير الأيقونة لاحقاً، يسترجع المعرّف المحفوظ تلقائياً ليعمل من أي مكان للأبد
-            clinicId = localStorage.getItem('HalaSavedClinicID');
-        }
-
-        // بناء الرابط السحابي بالتجميع الحرفي لمنع تشوهات المتصفحات
-        const s1 = "https://halac";
-        const s2 = "linicdb-default-rtdb.f";
-        const s3 = "irebaseio.com";
-        const baseFirebaseUrl = s1 + s2 + s3;
-
-        if (clinicId && clinicId.trim() !== "") {
-            return baseFirebaseUrl + "/clinics/" + clinicId.trim() + ".json";
-        }
-        return baseFirebaseUrl + "/clinics/Clinic_Default_Test.json";
-    }
-
-    async function sendAppointmentToCloud() {
-        const firebaseURL = getFirebaseTargetUrl();
-        const statusDiv = document.getElementById("statusMessage");
-        const btn = document.getElementById("btnSubmit");
-
-        const name = document.getElementById("txtPatientName").value.trim();
-        const age = document.getElementById("txtAge").value.trim();
-        const gender = document.getElementById("cbGender").value;
-        const phone = document.getElementById("txtPhone").value.trim();
-        const address = document.getElementById("txtAddress").value.trim();
-
-        if (!name) {
-            alert("يرجى إدخال اسم المريض الكامل.");
-            return;
-        }
-
-        const appointmentData = {
-            PatientName: name,
-            Age: age ? age : "0",
-            Gender: gender,
-            Phone: phone ? phone : "---",
-            Address: address ? address : "غير محدد",
-            VisitStatus: "حجز مؤكد"
-        };
-
-        btn.disabled = true;
-        btn.innerText = "Processing Cloud Sync...";
-
-        try {
-            const response = await fetch(firebaseURL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(appointmentData)
-            });
-
-            if (response.ok) {
-                statusDiv.style.display = "block";
-                statusDiv.style.color = "green";
-                statusDiv.innerText = "✨ Appointment Sent Successfully to HALA Clinic System!";
-                
-                document.getElementById("txtPatientName").value = "";
-                document.getElementById("txtAge").value = "";
-                document.getElementById("txtPhone").value = "";
-                document.getElementById("txtAddress").value = "";
-            } else {
-                throw new Error("Cloud Refused Connection");
-            }
-        } catch (error) {
-            statusDiv.style.display = "block";
-            statusDiv.style.color = "red";
-            statusDiv.innerText = "❌ Sync Failed! Please Check Internet Connection.";
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "تأكيد وإرسال الحجز ⚡";
-        }
-    }
+const urlParams=new URLSearchParams(window.location.search);
+const clinicId=urlParams.get('clinic')||'FallbackClinicID';
+const firebaseBaseUrl="https://firebaseio.com";
+let currentLiveMaxSeq=0;
+let expectedNextSeq=1;
+let isNextDayBooking=false;
+window.onload=function(){verifyClientPreviousBookingStatus();fetchClinicDataAndMetadata();};
+function verifyClientPreviousBookingStatus(){const lastBookingDate=localStorage.getItem(`Hala_Block_${clinicId}`);const todayStr=new Date().toLocaleDateString('en-CA');if(lastBookingDate===todayStr){document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#fef2f2;color:#b91c1c;border-radius:8px;font-weight:bold;">⚠️ حظر التكرار: لقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح! لا يمكن حجز مقعدين في نفس الوقت.</div>`;}}
+async function fetchClinicDataAndMetadata(){try{const metaResponse=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);const metaData=await metaResponse.json();if(metaData){document.getElementById('lblClinicName').innerText=metaData.ClinicName||"العيادة الطبية التخصصية";document.getElementById('lblClinicPhone').innerText=`رقم الحجز والدعم: ${metaData.ClinicPhone||'---'}`;currentLiveMaxSeq=parseInt(metaData.LiveCurrentMaxSeq)||0;}const appointmentsResponse=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`);const allData=await appointmentsResponse.json();let floatingNightAppointmentsCount=0;if(allData){floatingNightAppointmentsCount=Object.keys(allData).filter(key=>key!=='ClinicMetadata').length;}const currentHour=new Date().getHours();if(currentHour>=0&&currentHour<8){isNextDayBooking=true;document.getElementById('queueInfo').innerText="وضع الحجز: العيادة مغلقة حالياً - يتم الجدولة لليوم التالي 🗓️";expectedNextSeq=currentLiveMaxSeq+floatingNightAppointmentsCount+1;}else{isNextDayBooking=false;document.getElementById('queueInfo').innerText=`حالة الطابور الحي داخل العيادة الآن: ${currentLiveMaxSeq} مراجع معتمد.`;expectedNextSeq=currentLiveMaxSeq+floatingNightAppointmentsCount+1;}document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;}catch(error){console.error("خطأ في قراءة السحاب:",error);document.getElementById('queueInfo').innerText="⚠️ خطأ في الاتصال بالسحاب العيادي الحركي.";}}
+async function executeSecureClientBooking(){const name=document.getElementById('txtPatientName').value.trim();const age=document.getElementById('txtPatientAge').value.trim();const gender=document.getElementById('cbPatientGender').value;const phone=document.getElementById('txtPatientPhone').value.trim();const address=document.getElementById('txtPatientAddress').value.trim();if(!name||name.length<6){alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");return;}if(!age||age<1||age >110){alert("يرجى إدخال عمر صحيح.");return;}if(!phone||phone.length<10){alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام على الأقل.");return;}document.getElementById('btnSubmitBooking').disabled=true;document.getElementById('btnSubmitBooking').innerText="⏳ جاري تشفير وحفظ مقعدك بالخزينة السحابية...";const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير محدد",Timestamp:new Date().toISOString()};try{const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(response.ok){const todayStr=new Date().toLocaleDateString('en-CA');localStorage.setItem(`Hala_Block_${clinicId}`,todayStr);document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#d1fae5;color:#065f46;border-radius:8px;font-weight:bold;margin-bottom:15px;">🎉 تم تثبيت وتأكيد حجزك بنجاح في العيادة!<br>رقمك المخصص في طابور الانتظار هو: [ ${expectedNextSeq} ]</div><p style="font-size:13px;color:#4b5563;">يرجى التقاط لقطة شاشة (Screenshot) لشاشتك الحالية وإبرازها للسكرتير عند وصولك للعيادة.</p>`;}else{throw new Error("فشل الاستجابة السحابية");}}catch(error){alert("حدث خطأ أثناء إرسال الحجز، يرجى إعادة المحاولة.");document.getElementById('btnSubmitBooking').disabled=false;document.getElementById('btnSubmitBooking').innerText="⚡ تثبيت وتأكيد الحجز الفوري";}}
 </script>
-
 </body>
 </html>
