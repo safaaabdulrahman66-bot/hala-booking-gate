@@ -17,14 +17,17 @@ input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;
 button{width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s;margin-bottom:10px;}
 button:hover{background:#059669;}
 button:disabled{background:#cbd5e1;cursor:not-allowed;}
-.btn-install{background:#3b82f6;display:none;width:100%;padding:10px;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:15px;}
+.btn-install{background:#3b82f6;display:none;width:100%;padding:10px;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:10px;}
 .btn-install:hover{background:#2563eb;}
+.btn-wa-auto{background:#10b981;display:none;width:100%;padding:10px;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:15px;}
+.btn-wa-auto:hover{background:#059669;}
 .footer-note{font-size:11px;color:#94a3b8;margin-top:25px;}
 </style>
 </head>
 <body>
 <div class="card">
 <button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
+<button id="waAutoBtn" class="btn-wa-auto" onclick="triggerWhatsAppAutomation()">⚡ تفعيل وأتمتة واتساب الأعمال للعيادة</button>
 <h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
 <p style="color:#64748b;font-size:13px;" id="lblClinicPhone">نظام الحجز الذاتي المشترك</p>
 <div class="status-box">
@@ -62,13 +65,18 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 <script>
 const urlParams=new URLSearchParams(window.location.search);
 const clinicId=urlParams.get('clinic')||'FallbackClinicID';
+const userRole=urlParams.get('role')||'patient';
 const p1="ht"+"tps:/";const p2="/halac"+"linicdb-de";const p3="fault-r"+"tdb.fi";const p4="rebas"+"eio.co"+"m";
 const firebaseBaseUrl=p1+p2+p3+p4;
 let currentLiveMaxSeq=0;let expectedNextSeq=1;
 let deferredPrompt;
+let currentClinicRealName="العيادة الطبية التخصصية";
 window.onload=function(){
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(()=>{console.log("SW OK");}).catch(err=>console.log(err));}
-fetchClinicDataAndMetadata();
+if(userRole==='secretary'){
+document.getElementById('waAutoBtn').style.display='block';
+}
+verifyClientPreviousBookingStatus();fetchClinicDataAndMetadata();
 };
 window.addEventListener('beforeinstallprompt',(e)=>{
 e.preventDefault();deferredPrompt=e;
@@ -81,6 +89,20 @@ deferredPrompt.userChoice.then((choiceResult)=>{
 if(choiceResult.outcome==='accepted'){document.getElementById('pwaInstallBtn').style.display='none';}
 deferredPrompt=null;
 });
+}
+}
+function triggerWhatsAppAutomation(){
+const appUrl=`https://github.io{clinicId}`;
+const msg=`مرحباً بك في بوابة الحجز الإلكتروني الموحدة لعيادتنا الموقرة 🩺✨\n\nلتوفير وقتك وتجنب الانتظار الطويل، يمكنك الآن الحجز بنفسك ومعرفة تسلسلك الفوري في الطابور الموحد على مدار 24 ساعة.\n\n1️⃣ [للحجز الذاتي الفوري ومعرفة رقمك] ⚡:\nانقر على الرابط الآمن التالي واكتب اسمك الثلاثي:\n👇👇👇\n${appUrl}\n\n2️⃣ [للتحدث مع السكرتارية أو الاستفسار] 👤:\nاكتب تفاصيل استفسارك في رسالة واحدة هنا، وسيقوم السكرتير بالرد عليك فور بدء الدوام الرسمي للعيادة.\n\nنتمنى لكم دوام الصحة والعافية 🌸`;
+const waIntentUrl=`whatsapp://biz_settings_greeting?text=${encodeURIComponent(msg)}`;
+window.location.href=waIntentUrl;
+}
+function verifyClientPreviousBookingStatus(){
+if(userRole==='secretary') return;
+const lastBookingDate=localStorage.getItem(`Hala_Block_${clinicId}`);
+const todayStr=new Date().toLocaleDateString('en-CA');
+if(lastBookingDate===todayStr){
+document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#fef2f2;color:#b91c1c;border-radius:8px;font-weight:bold;">⚠️ حظر التكرار: لقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح!</div>`;
 }
 }
 async function fetchClinicDataAndMetadata(){
@@ -103,7 +125,10 @@ count=0;
 expectedNextSeq=count+1;
 document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;
 if(allData&&allData.ClinicMetadata){
-if(allData.ClinicMetadata.ClinicName)document.getElementById('lblClinicName').innerText=allData.ClinicMetadata.ClinicName;
+if(allData.ClinicMetadata.ClinicName){
+currentClinicRealName=allData.ClinicMetadata.ClinicName;
+document.getElementById('lblClinicName').innerText=currentClinicRealName;
+}
 if(allData.ClinicMetadata.ClinicPhone)document.getElementById('lblClinicPhone').innerText=`رقم الحجز: `+allData.ClinicMetadata.ClinicPhone;
 }
 }
@@ -126,6 +151,10 @@ const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:addres
 try{
 const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
 if(response.ok){
+if(userRole!=='secretary'){
+const todayStr=new Date().toLocaleDateString('en-CA');
+localStorage.setItem(`Hala_Block_${clinicId}`,todayStr);
+}
 alert("🎉 تم تسجيل الحجز بنجاح وبسرعة البرق!");
 document.getElementById('txtPatientName').value='';
 document.getElementById('txtPatientAge').value='';
