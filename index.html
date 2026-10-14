@@ -83,8 +83,66 @@ deferredPrompt=null;
 });
 }
 }
-async function fetchClinicDataAndMetadata(){try{const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`);if(response.ok){const allData=await response.json();let count=0;if(allData){count=Object.keys(allData).length;currentLiveMaxSeq=count;}expectedNextSeq=currentLiveMaxSeq+1;document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;}}catch(e){document.getElementById('expectedSeq').innerText=`التسلسل المتاح للحجز الآن: (1) `;}}
-async function executeSecureClientBooking(){const name=document.getElementById('txtPatientName').value.trim();const age=document.getElementById('txtPatientAge').value.trim();const gender=document.getElementById('cbPatientGender').value;const phone=document.getElementById('txtPatientPhone').value.trim();const address=document.getElementById('txtPatientAddress').value.trim();if(!name||name.length<6){alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");return;}if(!age||age<1||age>110){alert("يرجى إدخال عمر صحيح.");return;}if(!phone||phone.length<10){alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام.");return;}document.getElementById('btnSubmitBooking').disabled=true;document.getElementById('btnSubmitBooking').innerText="⏳ جاري حفظ مقعدك سحابياً...";const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير محدد",Timestamp:new Date().toISOString()};try{const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(response.ok){document.getElementById('bookingForm').innerHTML=`<div style="padding:20px;background:#d1fae5;color:#065f46;border-radius:8px;font-weight:bold;margin-bottom:15px;">🎉 تم تثبيت وتأكيد حجزك بنجاح في العيادة!<br>رقمك المخصص في طابور الانتظار هو: [ ${expectedNextSeq} ]</div>`;}else{throw new Error("Error");}}catch(error){alert("حدث خطأ، يرجى إعادة المحاولة.");document.getElementById('btnSubmitBooking').disabled=false;document.getElementById('btnSubmitBooking').innerText="⚡ تثبيت وتأكيد الحجز الفوري";}}
+async function fetchClinicDataAndMetadata(){
+try{
+const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`);
+if(response.ok){
+const allData=await response.json();
+let count=0;
+if(allData){
+if(allData.ClinicMetadata&&allData.ClinicMetadata.LiveCurrentMaxSeq){
+currentLiveMaxSeq=parseInt(allData.ClinicMetadata.LiveCurrentMaxSeq)||0;
+}else{
+currentLiveMaxSeq=0;
+}
+const floatingRecords=Object.keys(allData).filter(k=>k!=='ClinicMetadata').length;
+count=currentLiveMaxSeq+floatingRecords;
+}else{
+count=0;
+}
+expectedNextSeq=count+1;
+document.getElementById('expectedSeq').innerText=`تسلسلك المتوقع في الطابور هو: (${expectedNextSeq})`;
+if(allData&&allData.ClinicMetadata){
+if(allData.ClinicMetadata.ClinicName)document.getElementById('lblClinicName').innerText=allData.ClinicMetadata.ClinicName;
+if(allData.ClinicMetadata.ClinicPhone)document.getElementById('lblClinicPhone').innerText=`رقم الحجز: `+allData.ClinicMetadata.ClinicPhone;
+}
+}
+}catch(e){
+document.getElementById('expectedSeq').innerText=`التسلسل المتاح للحجز الآن: (1)`;
+}
+}
+async function executeSecureClientBooking(){
+const name=document.getElementById('txtPatientName').value.trim();
+const age=document.getElementById('txtPatientAge').value.trim();
+const gender=document.getElementById('cbPatientGender').value;
+const phone=document.getElementById('txtPatientPhone').value.trim();
+const address=document.getElementById('txtPatientAddress').value.trim();
+if(!name||name.length<6){alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");return;}
+if(!age||age<1||age>110){alert("يرجى إدخال عمر صحيح.");return;}
+if(!phone||phone.length<10){alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام.");return;}
+document.getElementById('btnSubmitBooking').disabled=true;
+document.getElementById('btnSubmitBooking').innerText="⏳ جاري حفظ مقعدك سحابياً...";
+const payload={PatientName:name,Age:age,Gender:gender,Phone:phone,Address:address||"غير محدد",Timestamp:new Date().toISOString()};
+try{
+const response=await fetch(`${firebaseBaseUrl}/clinics/${clinicId}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+if(response.ok){
+alert("🎉 تم تسجيل الحجز بنجاح وبسرعة البرق!");
+document.getElementById('txtPatientName').value='';
+document.getElementById('txtPatientAge').value='';
+document.getElementById('txtPatientPhone').value='';
+document.getElementById('txtPatientAddress').value='';
+document.getElementById('btnSubmitBooking').disabled=false;
+document.getElementById('btnSubmitBooking').innerText="⚡ تثبيت وتأكيد الحجز الفوري";
+fetchClinicDataAndMetadata();
+}else{
+throw new Error("Error");
+}
+}catch(error){
+alert("حدث خطأ، يرجى إعادة المحاولة.");
+document.getElementById('btnSubmitBooking').disabled=false;
+document.getElementById('btnSubmitBooking').innerText="⚡ تثبيت وتأكيد الحجز الفوري";
+}
+}
 </script>
 </body>
 </html>
