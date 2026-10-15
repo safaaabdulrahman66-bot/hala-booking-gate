@@ -68,7 +68,7 @@
 
     
 
-    <script>
+<script>
     const urlParams = new URLSearchParams(window.location.search);
     const clinicId = urlParams.get('clinic') || 'FallbackClinicID';
     const userRole = urlParams.get('role') || 'patient';
@@ -97,15 +97,23 @@
             document.getElementById('waAutoBtn').style.display = 'block';
         }
 
+        // جلب حقول الهوية الطبية الحية من السحاب وعزلها عن الترقيم لمنع تعليق الهاتف
         try {
-            const metaResponse = await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);
-            if(metaResponse.ok) {
-                const metaData = await metaResponse.json();
+            const response1 = await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);
+            if(response1.ok) {
+                const metaData = await response1.json();
                 if(metaData) {
+                    // سحب الحقل الأول كإسم للعيادة والحقل الثاني كإسم للطبيب المعتمد
                     document.getElementById('lblClinicName').innerText = metaData.ClinicName || "العيادة الطبية التخصصية";
+                    
+                    // جلب الحقل المشترك لاسم الطبيب المرفوع من كود الـ Desktop المحدث
+                    if (metaData.DoctorName) {
+                        document.getElementById('lblDoctorName').innerText = metaData.DoctorName;
+                    } else {
+                        document.getElementById('lblDoctorName').innerText = "العيادة الطبية التخصصية";
+                    }
+                    
                     globalClinicPhone = metaData.ClinicPhone || "";
-                    document.getElementById('lblClinicPhone').innerText = "رقم هاتف الحجز الموحد: " + (globalClinicPhone || "---");
-                    document.getElementById('queueInfo').innerText = `متصل بالسحاب ⚡ | الطابور الحالي: ${metaData.LiveCurrentMaxSeq || 0}`;
                 }
             } else {
                 fallbackMetadata();
@@ -117,7 +125,7 @@
 
     function fallbackMetadata() {
         document.getElementById('lblClinicName').innerText = "العيادة الطبية التخصصية";
-        document.getElementById('queueInfo').innerText = "حالة الاتصال: متصل بالسحاب للعيادة ⚡";
+        document.getElementById('lblDoctorName').innerText = "الطبيب الاختصاصي";
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -145,10 +153,10 @@
         const gitParts = ["ht", "tps", "://", "safaaabdulrahman66-bot", ".github.io", "/hala-booking-gate/"];
         const baseGitUrl = gitParts.join("");
 
-        // بناء الرابط النقي الموجه للمرضى بشكل معزول وصحيح
+        // 🧠 تصحيح حاسم: بناء الرابط ليكون موجه للمريض حصراً (role=patient) ليفتح صفحة ويب الحجز مباشرة دون أزرار السكرتير
         const appUrl = baseGitUrl + "?clinic=" + clinicId + "&role=patient";
         
-        // رسالة احترافية تتضمن دليلاً ذكياً للمراجع لتفعيل رابط الحجز الفوري
+        // صيغة رسالة الرد الآلي المعتمدة لنسخها وحفظها في إعدادات واتساب الأعمال للعيادة
         const msg = "مرحباً بك في بوابة الحجز الإلكتروني الموحدة لعيادتنا التخصصية 🩺✨\n\n" +
                     "لتوفير وقتك وتجنب الانتظار الطويل، يمكنك الآن الحجز بنفسك وتأكيد موعدك الفوري المباشر على مدار 24 ساعة.\n\n" +
                     "💡 [ملاحظة تفعيل الرابط]: إذا ظهر لك الرابط باللون الأسود، يرجى فقط إرسال كلمة (مرحبًا) أو حفظ رقم العيادة ليتحول فوراً إلى اللون الأزرق المفعّل.\n\n" +
@@ -158,7 +166,6 @@
                     appUrl + "\n\n" +
                     "نتمنى لكم دوام الصحة والعافية 🌸";
 
-        // تطهير رقم العيادة وتحويله للصيغة الدولية لفتح شات العيادة الفوري وتثبيت الرسالة
         let cleanPhone = globalClinicPhone.trim();
         if(cleanPhone.startsWith("0")) {
             cleanPhone = "964" + cleanPhone.substring(1);
@@ -166,11 +173,10 @@
             cleanPhone = "964" + cleanPhone;
         }
 
-        // تفكيك بروتوكول واجهة الواتساب الرسمية لمنع التحريف واقتطاع جوجل
         const waParts = ["ht", "tps", "://", "wa", ".me", "/"];
         const baseWaUrl = waParts.join("");
 
-        // إطلاق التوجيه الفوري الحتمي لشات العيادة مع لصق النص جاهزاً للإرسال أو النسخ لرسالة الترحيب
+        // فتح محادثة هاتف السكرتير ولصق الرسالة والرابط بداخلها ليتم حفظها كرسالة ترحيب آلية
         const waIntentUrl = baseWaUrl + cleanPhone + "?text=" + encodeURIComponent(msg);
         window.location.href = waIntentUrl;
     }
@@ -214,7 +220,7 @@
             Age: age,
             Gender: gender,
             Phone: phone,
-            Address: address || "غير محدد",
+            Address: address || "غير حدد",
             Timestamp: new Date().toISOString()
         };
 
