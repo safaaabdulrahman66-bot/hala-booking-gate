@@ -9,8 +9,9 @@
         :root{--p-color:#1e293b;--s-color:#0f172a;}
         body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8fafc;margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;}
         .card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);width:100%;max-width:440px;text-align:center;border:2px solid #e2e8f0;}
-        h2{color:var(--p-color);margin-top:0;font-size:22px;}
-        .status-box{background:#f1f5f9;padding:15px;border-radius:8px;margin:20px 0;font-weight:bold;color:#334155;border-right:5px solid #3b82f6;text-align:right;}
+        h2{color:var(--p-color);margin-top:0;font-size:22px;margin-bottom:5px;}
+        .dr-name{color:#475569;font-size:16px;font-weight:bold;margin-top:0;margin-bottom:20px;}
+        .status-box{background:#f1f5f9;padding:15px;border-radius:8px;margin:20px 0;font-weight:bold;color:#334155;border-right:5px solid #10b981;text-align:center;}
         .form-group{margin-bottom:15px;text-align:right;}
         label{display:block;margin-bottom:5px;font-weight:bold;color:#475569;font-size:14px;}
         input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:15px;}
@@ -28,10 +29,13 @@
 <div class="card">
     <button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
     <button id="waAutoBtn" class="btn-wa-auto" onclick="triggerWhatsAppAutomation()">⚡ تفعيل وأتمتة واتساب الأعمال للعيادة</button>
+    
+    <!-- عرض الحقل الأول (اسم العيادة) وأسفل منه مباشرة الحقل الثاني (اسم الدكتور) قطعياً -->
     <h2 id="lblClinicName">جاري تحميل اسم العيادة...</h2>
-    <p style="color:#64748b;font-size:13px;" id="lblClinicPhone">نظام الحجز الذاتي المشترك</p>
+    <div id="lblDoctorName" class="dr-name">جاري تحميل اسم الطبيب...</div>
+    
     <div class="status-box">
-        <div id="queueInfo">حالة الاتصال: جاري المزامنة السحابية... ⏳</div>
+        <div id="queueInfo">بوابة الحجز الفوري السحابية النشطة ⚡</div>
     </div>
     <div id="bookingForm">
         <div class="form-group">
@@ -62,6 +66,7 @@
     <div class="footer-note">نظام الحجز الذاتي السحابي المشترك © HALA Clinic System</div>
 </div>
 
+    
 
     <script>
     const urlParams = new URLSearchParams(window.location.search);
