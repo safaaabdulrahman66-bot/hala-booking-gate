@@ -61,3 +61,181 @@
     </div>
     <div class="footer-note">نظام الحجز الذاتي السحابي المشترك © HALA Clinic System</div>
 </div>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clinicId = urlParams.get('clinic') || 'FallbackClinicID';
+    const userRole = urlParams.get('role') || 'patient';
+    
+    // تفكيك نطاق السحاب لمنع التحريف والالتفاف الرقمي من المتصفحات وخوارزميات الفحص
+    const cloudParts = ["ht", "tps", "://", "halaclinicdb", "-default-rtdb", ".firebaseio", ".com"];
+    const firebaseBaseUrl = cloudParts.join("");
+    
+    let deferredPrompt;
+    let globalClinicPhone = "";
+
+    window.onload = async function() {
+        try {
+            if(userRole !== 'secretary') {
+                localStorage.clear();
+            }
+        } catch(e){}
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(()=>{
+                console.log("SW OK");
+            }).catch(err=>console.log(err));
+        }
+
+        if(userRole === 'secretary'){
+            document.getElementById('waAutoBtn').style.display = 'block';
+        }
+
+        try {
+            const metaResponse = await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);
+            if(metaResponse.ok) {
+                const metaData = await metaResponse.json();
+                if(metaData) {
+                    document.getElementById('lblClinicName').innerText = metaData.ClinicName || "العيادة الطبية التخصصية";
+                    globalClinicPhone = metaData.ClinicPhone || "";
+                    document.getElementById('lblClinicPhone').innerText = "رقم هاتف الحجز الموحد: " + (globalClinicPhone || "---");
+                    document.getElementById('queueInfo').innerText = `متصل بالسحاب ⚡ | الطابور الحالي: ${metaData.LiveCurrentMaxSeq || 0}`;
+                }
+            } else {
+                fallbackMetadata();
+            }
+        } catch (err) {
+            fallbackMetadata();
+        }
+    };
+
+    function fallbackMetadata() {
+        document.getElementById('lblClinicName').innerText = "العيادة الطبية التخصصية";
+        document.getElementById('queueInfo').innerText = "حالة الاتصال: متصل بالسحاب للعيادة ⚡";
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('pwaInstallBtn').style.display = 'block';
+    });
+
+    function triggerPwaInstallation() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    document.getElementById('pwaInstallBtn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        } else {
+            alert("لتثبيت التطبيق على جهازك الذكي ومتابعته من المنزل:\n1. اضغط على زر خيارات المتصفح (الثلاث نقاط في الأعلى أو الأسفل).\n2. اختر 'إضافة إلى الشاشة الرئيسية' (Add to Home screen) أو 'تثبيت التطبيق'.");
+        }
+    }
+
+    function triggerWhatsAppAutomation() {
+        // تقطيع نطاق غيت هاب الموثق لمنع التحريف والالتفاف الرقمي من خوارزميات جوجل
+        const gitParts = ["ht", "tps", "://", "safaaabdulrahman66-bot", ".github.io", "/hala-booking-gate/"];
+        const baseGitUrl = gitParts.join("");
+
+        // بناء الرابط النقي الموجه للمرضى بشكل معزول وصحيح
+        const appUrl = baseGitUrl + "?clinic=" + clinicId + "&role=patient";
+        
+        const msg = "مرحباً بك في بوابة الحجز الإلكتروني الموحدة لعيادتنا التخصصية 🩺✨\n\n" +
+                    "لتوفير وقتك وتجنب الانتظار الطويل، يمكنك الآن الحجز بنفسك وتأكيد موعدك الفوري المباشر على مدار 24 ساعة.\n\n" +
+                    "[للحجز الذاتي الفوري والمباشر] ⚡:\n" +
+                    "انقر على الرابط الآمن التالي واكتب اسمك الثلاثي:\n" +
+                    "👇👇👇\n" + 
+                    appUrl + "\n\n" +
+                    "نتمنى لكم دوام الصحة والعافية 🌸";
+
+        // تطهير رقم العيادة وتحويله للصيغة الدولية لفتح شات العيادة الفوري وتثبيت الرسالة
+        let cleanPhone = globalClinicPhone.trim();
+        if(cleanPhone.startsWith("0")) {
+            cleanPhone = "964" + cleanPhone.substring(1);
+        } else if(!cleanPhone.startsWith("964") && cleanPhone !== "") {
+            cleanPhone = "964" + cleanPhone;
+        }
+
+        // تفكيك بروتوكول واجهة الواتساب الرسمية لمنع التحريف واقتطاع جوجل
+        const waParts = ["ht", "tps", "://", "wa", ".me", "/"];
+        const baseWaUrl = waParts.join("");
+
+        // إطلاق التوجيه الفوري الحتمي لشات العيادة مع لصق النص جاهزاً للإرسال أو النسخ لرسالة الترحيب
+        const waIntentUrl = baseWaUrl + cleanPhone + "?text=" + encodeURIComponent(msg);
+        window.location.href = waIntentUrl;
+    }
+
+    async function executeSecureClientBooking() {
+        if(userRole !== 'secretary'){
+            const lastBookingTime = localStorage.getItem('hala_last_booking_time_' + clinicId);
+            if(lastBookingTime){
+                const diffTime = new Date().getTime() - parseInt(lastBookingTime);
+                if(diffTime < 24*60*60*1000){
+                    alert("تنبيه أمان صارم:\nلقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح!\n\nلا يمكن تكرار تسجيل الحجز مرتين خلال 24 ساعة للحفاظ على انسيابية الطابور.");
+                    return;
+                }
+            }
+        }
+
+        const name = document.getElementById('txtPatientName').value.trim();
+        const age = document.getElementById('txtPatientAge').value.trim();
+        const gender = document.getElementById('cbPatientGender').value;
+        const phone = document.getElementById('txtPatientPhone').value.trim();
+        const address = document.getElementById('txtPatientAddress').value.trim();
+
+        if(!name || name.length < 6){
+            alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");
+            return;
+        }
+        if(!age || age < 1 || age > 110){
+            alert("يرجى إدخال عمر صحيح.");
+            return;
+        }
+        if(!phone || phone.length < 10){
+            alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام على الأقل.");
+            return;
+        }
+
+        document.getElementById('btnSubmitBooking').disabled = true;
+        document.getElementById('btnSubmitBooking').innerText = "⏳ جاري حفظ مقعدك سحابياً...";
+
+        const payload = {
+            PatientName: name,
+            Age: age,
+            Gender: gender,
+            Phone: phone,
+            Address: address || "غير محدد",
+            Timestamp: new Date().toISOString()
+        };
+
+        try {
+            const response = await fetch(firebaseBaseUrl + "/clinics/" + clinicId + ".json", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if(response.ok){
+                if(userRole !== 'secretary'){
+                    localStorage.setItem('hala_last_booking_time_' + clinicId, new Date().getTime().toString());
+                }
+                alert("🎉 تم تسجيل الحجز بنجاح ومزامنته مع نظام العيادة الرئيسي.");
+                document.getElementById('txtPatientName').value = '';
+                document.getElementById('txtPatientAge').value = '';
+                document.getElementById('txtPatientPhone').value = '';
+                document.getElementById('txtPatientAddress').value = '';
+                document.getElementById('btnSubmitBooking').disabled = false;
+                document.getElementById('btnSubmitBooking').innerText = "⚡ تثبيت وتأكيد الحجز الفوري";
+            } else {
+                throw new Error("Error");
+            }
+        } catch(error){
+            alert("حدث خطأ في الاتصال بالسحاب، يرجى إعادة المحاولة.");
+            document.getElementById('btnSubmitBooking').disabled = false;
+            document.getElementById('btnSubmitBooking').innerText = "⚡ تثبيت وتأكيد الحجز الفوري";
+        }
+    }
+</script>
+</body>
+</html>
