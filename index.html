@@ -67,8 +67,8 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const clinicId = urlParams.get('clinic') || 'FallbackClinicID';
-    const userRole = urlParams.get('role') || 'patient';
     
+    // التقاط فوري لبيانات العيادة المحقونة داخل الباركود لسرعة صفر ثانية وبدون انتظار أي شبكة
     const paramClinicName = urlParams.get('cName');
     const paramDoctorName = urlParams.get('drName') || urlParams.get('dName');
 
@@ -79,18 +79,13 @@
     let deferredPrompt;
 
     window.onload = function() {
-        try {
-            if(userRole !== 'secretary') {
-                localStorage.clear();
-            }
-        } catch(e){}
-
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(()=>{
                 console.log("SW OK");
             }).catch(err=>console.log(err));
         }
 
+        // حقن فوري للأسماء في واجهة الموبايل فور تشغيلها بناءً على معطيات حقن الباركود المباشرة
         if (paramClinicName) {
             document.getElementById('lblClinicName').innerText = decodeURIComponent(paramClinicName);
         }
@@ -120,16 +115,7 @@
     }
 
     async function executeSecureClientBooking() {
-        if(userRole !== 'secretary'){
-            const lastBookingTime = localStorage.getItem('hala_last_booking_time_' + clinicId);
-            if(lastBookingTime){
-                const diffTime = new Date().getTime() - parseInt(lastBookingTime);
-                if(diffTime < 24*60*60*1000){
-                    alert("تنبيه أمان صارم:\nلقد قمت بتسجيل حجز مسبق في هذه العيادة لليوم بنجاح!\n\nلا يمكن تكرار تسجيل الحجز مرتين خلال 24 ساعة للحفاظ على انسيابية الطابور.");
-                    return;
-                }
-            }
-        }
+        // [تطهير أمني كامل]: تم حذف وإزالة قيد الـ 24 ساعة وحظر التكرار تماماً لفتح الحجز آلاف المرات للسكرتير دون أي قيود
 
         const name = document.getElementById('txtPatientName').value.trim();
         const age = document.getElementById('txtPatientAge').value.trim();
@@ -170,9 +156,6 @@
             });
 
             if(response.ok){
-                if(userRole !== 'secretary'){
-                    localStorage.setItem('hala_last_booking_time_' + clinicId, new Date().getTime().toString());
-                }
                 alert("🎉 تم تسجيل الحجز بنجاح ومزامنته مع نظام العيادة الرئيسي.");
                 document.getElementById('txtPatientName').value = '';
                 document.getElementById('txtPatientAge').value = '';
