@@ -73,14 +73,17 @@
     const clinicId = urlParams.get('clinic') || 'FallbackClinicID';
     const userRole = urlParams.get('role') || 'patient';
     
+    // 🚀 التقاط فوري لبيانات العيادة المحقونة داخل الباركود لسرعة صفر ثانية وبدون انتظار أي شبكة
+    const paramClinicName = urlParams.get('cName');
+    const paramDoctorName = urlParams.get('drName') || urlParams.get('dName');
+
     // تفكيك نطاق السحاب لمنع التحريف والالتفاف الرقمي من المتصفحات وخوارزميات الفحص
     const cloudParts = ["ht", "tps", "://", "halaclinicdb", "-default-rtdb", ".firebaseio", ".com"];
     const firebaseBaseUrl = cloudParts.join("");
     
     let deferredPrompt;
-    let globalClinicPhone = "";
 
-    window.onload = async function() {
+    window.onload = function() {
         try {
             if(userRole !== 'secretary') {
                 localStorage.clear();
@@ -93,40 +96,18 @@
             }).catch(err=>console.log(err));
         }
 
+        // حقن فوري للأسماء في واجهة الموبايل فور تشغيلها إذا كانت ممررة بالباركود
+        if (paramClinicName) {
+            document.getElementById('lblClinicName').innerText = decodeURIComponent(paramClinicName);
+        }
+        if (paramDoctorName) {
+            document.getElementById('lblDoctorName').innerText = decodeURIComponent(paramDoctorName);
+        }
+
         if(userRole === 'secretary'){
             document.getElementById('waAutoBtn').style.display = 'block';
         }
-
-        // جلب حقول الهوية الطبية الحية من السحاب وعزلها عن الترقيم لمنع تعليق الهاتف
-        try {
-            const response1 = await fetch(`${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`);
-            if(response1.ok) {
-                const metaData = await response1.json();
-                if(metaData) {
-                    // سحب الحقل الأول كإسم للعيادة والحقل الثاني كإسم للطبيب المعتمد
-                    document.getElementById('lblClinicName').innerText = metaData.ClinicName || "العيادة الطبية التخصصية";
-                    
-                    // جلب الحقل المشترك لاسم الطبيب المرفوع من كود الـ Desktop المحدث
-                    if (metaData.DoctorName) {
-                        document.getElementById('lblDoctorName').innerText = metaData.DoctorName;
-                    } else {
-                        document.getElementById('lblDoctorName').innerText = "العيادة الطبية التخصصية";
-                    }
-                    
-                    globalClinicPhone = metaData.ClinicPhone || "";
-                }
-            } else {
-                fallbackMetadata();
-            }
-        } catch (err) {
-            fallbackMetadata();
-        }
     };
-
-    function fallbackMetadata() {
-        document.getElementById('lblClinicName').innerText = "العيادة الطبية التخصصية";
-        document.getElementById('lblDoctorName').innerText = "الطبيب الاختصاصي";
-    }
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -149,12 +130,15 @@
     }
 
     function triggerWhatsAppAutomation() {
-        // تقطيع نطاق غيت هاب الموثق لمنع التحريف والالتفاف الرقمي من خوارزميات جوجل
+        // تقطيع نطاق غيت هاب الموثق لمنع التحريف
         const gitParts = ["ht", "tps", "://", "safaaabdulrahman66-bot", ".github.io", "/hala-booking-gate/"];
         const baseGitUrl = gitParts.join("");
 
-        // 🧠 تصحيح حاسم: بناء الرابط ليكون موجه للمريض حصراً (role=patient) ليفتح صفحة ويب الحجز مباشرة دون أزرار السكرتير
-        const appUrl = baseGitUrl + "?clinic=" + clinicId + "&role=patient";
+        // الحفاظ على حقن الأسماء حتى في الرابط الفرعي الذي سيُرسل للمريض عبر الواتساب تلقائياً ليعمل لديه بسرعة البرق أيضاً
+        const encC = encodeURIComponent(document.getElementById('lblClinicName').innerText);
+        const encD = encodeURIComponent(document.getElementById('lblDoctorName').innerText);
+        
+        const appUrl = `${baseGitUrl}?clinic=${clinicId}&role=patient&cName=${encC}&dName=${encD}`;
         
         // صيغة رسالة الرد الآلي المعتمدة لنسخها وحفظها في إعدادات واتساب الأعمال للعيادة
         const msg = "مرحباً بك في بوابة الحجز الإلكتروني الموحدة لعيادتنا التخصصية 🩺✨\n\n" +
@@ -166,18 +150,11 @@
                     appUrl + "\n\n" +
                     "نتمنى لكم دوام الصحة والعافية 🌸";
 
-        let cleanPhone = globalClinicPhone.trim();
-        if(cleanPhone.startsWith("0")) {
-            cleanPhone = "964" + cleanPhone.substring(1);
-        } else if(!cleanPhone.startsWith("964") && cleanPhone !== "") {
-            cleanPhone = "964" + cleanPhone;
-        }
-
         const waParts = ["ht", "tps", "://", "wa", ".me", "/"];
         const baseWaUrl = waParts.join("");
 
-        // فتح محادثة هاتف السكرتير ولصق الرسالة والرابط بداخلها ليتم حفظها كرسالة ترحيب آلية
-        const waIntentUrl = baseWaUrl + cleanPhone + "?text=" + encodeURIComponent(msg);
+        // فتح واجهة إرسال الواتساب ولصق نص الأتمتة الموجه للمرضى مباشرة لتثبيته في الرد الترحيبي للعيادة
+        const waIntentUrl = baseWaUrl + "?text=" + encodeURIComponent(msg);
         window.location.href = waIntentUrl;
     }
 
@@ -220,7 +197,7 @@
             Age: age,
             Gender: gender,
             Phone: phone,
-            Address: address || "غير حدد",
+            Address: address || "غير محدد",
             Timestamp: new Date().toISOString()
         };
 
