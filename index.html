@@ -69,7 +69,6 @@
     const clinicId = urlParams.get('clinic') || 'FallbackClinicID';
     const userRole = urlParams.get('role') || 'patient';
     
-    // 🚀 التقاط فوري لبيانات العيادة المحقونة داخل الباركود لسرعة صفر ثانية وبدون انتظار أي شبكة
     const paramClinicName = urlParams.get('cName');
     const paramDoctorName = urlParams.get('drName') || urlParams.get('dName');
 
@@ -92,16 +91,11 @@
             }).catch(err=>console.log(err));
         }
 
-        // حقن فوري للأسماء في واجهة الموبايل فور تشغيلها إذا كانت ممررة بالباركود
         if (paramClinicName) {
             document.getElementById('lblClinicName').innerText = decodeURIComponent(paramClinicName);
         }
         if (paramDoctorName) {
             document.getElementById('lblDoctorName').innerText = decodeURIComponent(paramDoctorName);
-        }
-
-        if(userRole === 'secretary'){
-            document.getElementById('waAutoBtn').style.display = 'block';
         }
     };
 
@@ -123,35 +117,6 @@
         } else {
             alert("لتثبيت التطبيق على جهازك الذكي ومتابعته من المنزل:\n1. اضغط على زر خيارات المتصفح (الثلاث نقاط في الأعلى أو الأسفل).\n2. اختر 'إضافة إلى الشاشة الرئيسية' (Add to Home screen) أو 'تثبيت التطبيق'.");
         }
-    }
-
-    function triggerWhatsAppAutomation() {
-        // تقطيع نطاق غيت هاب الموثق لمنع التحريف
-        const gitParts = ["ht", "tps", "://", "safaaabdulrahman66-bot", ".github.io", "/hala-booking-gate/"];
-        const baseGitUrl = gitParts.join("");
-
-        // الحفاظ على حقن الأسماء حتى في الرابط الفرعي الذي سيُرسل للمريض عبر الواتساب تلقائياً ليعمل لديه بسرعة البرق أيضاً
-        const encC = encodeURIComponent(document.getElementById('lblClinicName').innerText);
-        const encD = encodeURIComponent(document.getElementById('lblDoctorName').innerText);
-        
-        const appUrl = `${baseGitUrl}?clinic=${clinicId}&role=patient&cName=${encC}&dName=${encD}`;
-        
-        // صيغة رسالة الرد الآلي المعتمدة لنسخها وحفظها في إعدادات واتساب الأعمال للعيادة
-        const msg = "مرحباً بك في بوابة الحجز الإلكتروني الموحدة لعيادتنا التخصصية 🩺✨\n\n" +
-                    "لتوفير وقتك وتجنب الانتظار الطويل، يمكنك الآن الحجز بنفسك وتأكيد موعدك الفوري المباشر على مدار 24 ساعة.\n\n" +
-                    "💡 [ملاحظة تفعيل الرابط]: إذا ظهر لك الرابط باللون الأسود، يرجى فقط إرسال كلمة (مرحبًا) أو حفظ رقم العيادة ليتحول فوراً إلى اللون الأزرق المفعّل.\n\n" +
-                    "[للحجز الذاتي الفوري والمباشر] ⚡:\n" +
-                    "انقر على الرابط الآمن التالي واكتب اسمك الثلاثي:\n" +
-                    "👇👇👇\n" + 
-                    appUrl + "\n\n" +
-                    "نتمنى لكم دوام الصحة والعافية 🌸";
-
-        const waParts = ["ht", "tps", "://", "wa", ".me", "/"];
-        const baseWaUrl = waParts.join("");
-
-        // فتح واجهة إرسال الواتساب ولصق نص الأتمتة الموجه للمرضى مباشرة لتثبيته في الرد الترحيبي للعيادة
-        const waIntentUrl = baseWaUrl + "?text=" + encodeURIComponent(msg);
-        window.location.href = waIntentUrl;
     }
 
     async function executeSecureClientBooking() {
