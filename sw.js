@@ -1,11 +1,11 @@
-const CACHE_NAME = 'hala-clinic-v6'; // تم تحديث الإصدار لإجبار المتصفح على التحديث
+const CACHE_NAME = 'hala-clinic-v7'; // تم رفع الإصدار لـ v7 لفرض التحديث الفوري على الهواتف
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json'
+  '/',
+  'index.html',
+  'manifest.json'
 ];
 
-// التثبيت وحفظ الملفات الأساسية
+// التثبيت وحفظ الملفات الأساسية في ذاكرة الهاتف
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME)
@@ -14,14 +14,14 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// تفعيل السيرفس وركر وحذف الكاش القديم فوراً
+// تفعيل السيرفس وركر وحذف الكاش القديم فوراً لمنع تعليق البكسلات
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('حذف الكاش القديم:', key);
+            console.log('حذف الكاش القديم المكتشف:', key);
             return caches.delete(key);
           }
         })
@@ -30,26 +30,32 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// استراتيجية النتوورك أولاً (Network-First) لمنع تعليق الكاش القديم
+// استراتيجية النتوورك أولاً (Network-First) الصارمة والمصححة
 self.addEventListener('fetch', (e) => {
-  // نطبق الاستراتيجية فقط على طلبات الموقع الأساسية (وثائق الـ HTML)
+  // استثناء طلبات الـ POST الخاصة بحجوزات الـ Firebase لمنع معالجتها بالكاش وحدوث أخطاء شبكة
+  if (e.request.method !== 'GET') {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
+  // نطبق الاستراتيجية على طلبات الموقع الأساسية (وثائق الـ HTML والتنقل)
   if (e.request.mode === 'navigate' || e.request.url.includes('index.html')) {
     e.respondWith(
       fetch(e.request)
         .then((networkResponse) => {
-          // تحديث الكاش بالنسخة الجديدة القادمة من السيرفر
+          // تحديث الكاش فوراً بالنسخة الحية الجديدة القادمة من السيرفر
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(e.request, networkResponse.clone());
             return networkResponse;
           });
         })
         .catch(() => {
-          // إذا فضل الإنترنت (أوفلاين) نفتح الكاش المخزن
-          return caches.match(e.request);
+          // في حال غياب الإنترنت التام، نفتح النسخة الاحتياطية المستقرة من الكاش
+          return caches.match('index.html') || caches.match(e.request);
         })
     );
   } else {
-    // باقي الملفات (الصور أو المانيفست) نأتي بها من الكاش أو النتوورك بشكل اعتيادي
+    // باقي ملفات الـ PWA (المانيفست والأيقونات) نأتي بها من الكاش أو النتوورك بشكل اعتيادي
     e.respondWith(
       caches.match(e.request).then((res) => res || fetch(e.request))
     );
