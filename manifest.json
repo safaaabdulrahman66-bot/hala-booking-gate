@@ -1,19 +1,19 @@
 {
   "short_name": "بوابة الحجز",
   "name": "بوابة الحجز الإلكتروني الذكي",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "background_color": "#f8fafc",
   "theme_color": "#1e293b",
   "display": "standalone",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
