@@ -25,7 +25,6 @@
 </head>
 <body>
 <div class="card">
-    <!-- تم الإبقاء فقط على زر التثبيت والتطبيق المباشر لهاتف السكرتير وحذف أي إضافات أخرى -->
     <button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
     
     <h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
@@ -66,13 +65,30 @@
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const clinicId = urlParams.get('clinic') || 'FallbackClinicID';
     
-    // التقاط فوري لبيانات العيادة المحقونة داخل الباركود لسرعة صفر ثانية وبدون انتظار أي شبكة
-    const paramClinicName = urlParams.get('cName');
-    const paramDoctorName = urlParams.get('drName') || urlParams.get('dName');
+    // 🧠 [محرك التخزين الدائم للذاكرة الصلبة]: التحقق من الرابط أو استعادة البيانات القديمة من الهاتف وللأبد
+    let clinicId = urlParams.get('clinic');
+    if (clinicId) {
+        localStorage.setItem('hala_clinic_id', clinicId);
+    } else {
+        clinicId = localStorage.getItem('hala_clinic_id') || 'FallbackClinicID';
+    }
+    
+    let paramClinicName = urlParams.get('cName');
+    if (paramClinicName) {
+        localStorage.setItem('hala_clinic_name', decodeURIComponent(paramClinicName));
+    } else {
+        paramClinicName = localStorage.getItem('hala_clinic_name');
+    }
 
-    // تفكيك نطاق السحاب لمنع التحريف والالتفاف الرقمي من المتصفحات وخوارزميات الفحص
+    let paramDoctorName = urlParams.get('drName') || urlParams.get('dName');
+    if (paramDoctorName) {
+        localStorage.setItem('hala_doctor_name', decodeURIComponent(paramDoctorName));
+    } else {
+        paramDoctorName = localStorage.getItem('hala_doctor_name');
+    }
+
+    // تفكيك نطاق السحاب لمنع التحريف والالتفاف الرقمي
     const cloudParts = ["ht", "tps", "://", "halaclinicdb", "-default-rtdb", ".firebaseio", ".com"];
     const firebaseBaseUrl = cloudParts.join("");
     
@@ -85,12 +101,12 @@
             }).catch(err=>console.log(err));
         }
 
-        // حقن فوري للأسماء في واجهة الموبايل فور تشغيلها بناءً على معطيات حقن الباركود المباشرة
+        // حقن العرض المباشر من الذاكرة الداخلية الصلبة دون اعتماد على الحاسبة
         if (paramClinicName) {
-            document.getElementById('lblClinicName').innerText = decodeURIComponent(paramClinicName);
+            document.getElementById('lblClinicName').innerText = paramClinicName;
         }
         if (paramDoctorName) {
-            document.getElementById('lblDoctorName').innerText = decodeURIComponent(paramDoctorName);
+            document.getElementById('lblDoctorName').innerText = paramDoctorName;
         }
     };
 
@@ -115,8 +131,6 @@
     }
 
     async function executeSecureClientBooking() {
-        // [تطهير أمني كامل]: تم حذف وإزالة قيد الـ 24 ساعة وحظر التكرار تماماً لفتح الحجز آلاف المرات للسكرتير دون أي قيود
-
         const name = document.getElementById('txtPatientName').value.trim();
         const age = document.getElementById('txtPatientAge').value.trim();
         const gender = document.getElementById('cbPatientGender').value;
@@ -161,13 +175,12 @@
                 document.getElementById('txtPatientAge').value = '';
                 document.getElementById('txtPatientPhone').value = '';
                 document.getElementById('txtPatientAddress').value = '';
-                document.getElementById('btnSubmitBooking').disabled = false;
-                document.getElementById('btnSubmitBooking').innerText = "⚡ تثبيت وتأكيد الحجز الفوري";
             } else {
                 throw new Error("Error");
             }
         } catch(error){
             alert("حدث خطأ في الاتصال بالسحاب، يرجى إعادة المحاولة.");
+        } finally {
             document.getElementById('btnSubmitBooking').disabled = false;
             document.getElementById('btnSubmitBooking').innerText = "⚡ تثبيت وتأكيد الحجز الفوري";
         }
