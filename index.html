@@ -1,190 +1,186 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الحجز الإلكتروني الذكي</title>
-    <link rel="manifest" href="./manifest.json">
-    <style>
-        :root{--p-color:#1e293b;--s-color:#0f172a;}
-        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8fafc;margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;}
-        .card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);width:100%;max-width:440px;text-align:center;border:2px solid #e2e8f0;}
-        h2{color:var(--p-color);margin-top:0;font-size:22px;margin-bottom:5px;}
-        .dr-name{color:#475569;font-size:16px;font-weight:bold;margin-top:0;margin-bottom:20px;}
-        .status-box{background:#f1f5f9;padding:15px;border-radius:8px;margin:20px 0;font-weight:bold;color:#334155;border-right:5px solid #3b82f6;text-align:center;}
-        .form-group{margin-bottom:15px;text-align:right;}
-        label{display:block;margin-bottom:5px;font-weight:bold;color:#475569;font-size:14px;}
-        input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:15px;}
-        button{width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s;margin-bottom:10px;}
-        button:hover{background:#059669;}
-        button:disabled{background:#cbd5e1;cursor:not-allowed;}
-        .btn-install{background:#3b82f6;display:none;width:100%;padding:12px;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:15px;}
-        .btn-install:hover{background:#2563eb;}
-        .footer-note{font-size:11px;color:#94a3b8;margin-top:25px;}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بوابة الحجز الإلكتروني الذكي</title>
+<link rel="manifest" href="./manifest.json">
+<style>
+:root{--p-color:#1e293b;--s-color:#0f172a;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8fafc;margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);width:100%;max-width:440px;text-align:center;border:2px solid #e2e8f0;}
+h2{color:var(--p-color);margin-top:0;font-size:22px;margin-bottom:5px;}
+.dr-name{color:#475569;font-size:16px;font-weight:bold;margin-top:0;margin-bottom:20px;}
+.status-box{background:#f1f5f9;padding:15px;border-radius:8px;margin:20px 0;font-weight:bold;color:#334155;border-right:5px solid #3b82f6;text-align:center;}
+.form-group{margin-bottom:15px;text-align:right;}
+label{display:block;margin-bottom:5px;font-weight:bold;color:#475569;font-size:14px;}
+input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:15px;}
+button{width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s;margin-bottom:10px;}
+button:hover{background:#059669;}
+button:disabled{background:#cbd5e1;cursor:not-allowed;}
+.btn-install{background:#3b82f6;display:none;width:100%;padding:12px;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:15px;}
+.btn-install:hover{background:#2563eb;}
+.footer-note{font-size:11px;color:#94a3b8;margin-top:25px;}
+.custom-alert-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);justify-content:center;align-items:center;z-index:10000;}
+.custom-alert-box{background:white;padding:25px;border-radius:12px;max-width:320px;width:85%;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.15);animation:popIn 0.3s ease;}
+.custom-alert-box h3{margin-top:0;color:#10b981;font-size:20px;}
+.custom-alert-box p{color:#475569;font-size:15px;margin-bottom:20px;font-weight:500;line-height:1.5;}
+.custom-alert-box button{background:#1e293b;color:white;margin-bottom:0;padding:10px;width:100+;}
+.custom-alert-box button:hover{background:#0f172a;}
+@keyframes popIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+</style>
 </head>
 <body>
 <div class="card">
-    <button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
-    
-    <h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
-    <div id="lblDoctorName" class="dr-name">الدكتور الاختصاصي</div>
-    
-    <div class="status-box">
-        <div id="queueInfo">بوابة الحجز الفوري السحابية النشطة ⚡</div>
-    </div>
-    <div id="bookingForm">
-        <div class="form-group">
-            <label>اسم المراجع الثلاثي الكامِل:</label>
-            <input type="text" id="txtPatientName" placeholder="اكتب اسم المريض الثلاثي...">
-        </div>
-        <div class="form-group">
-            <label>العمر:</label>
-            <input type="number" id="txtPatientAge" placeholder="العمر..">
-        </div>
-        <div class="form-group">
-            <label>الجنس:</label>
-            <select id="cbPatientGender">
-                <option value="ذكر">ذكر</option>
-                <option value="أنثى">أنثى</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>رقم هاتف المراجع للتواصل:</label>
-            <input type="tel" id="txtPatientPhone" placeholder="07xxxxxxxxx">
-        </div>
-        <div class="form-group">
-            <label>العنوان / السكن:</label>
-            <input type="text" id="txtPatientAddress" placeholder="المحافظة / المنطقة">
-        </div>
-        <button id="btnSubmitBooking" onclick="executeSecureClientBooking()">⚡ تثبيت وتأكيد الحجز الفوري</button>
-    </div>
-    <div class="footer-note">نظام الحجز الذاتي السحابي المشترك © HALA Clinic System</div>
+<button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
+<h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
+<div id="lblDoctorName" class="dr-name">الدكتور الاختصاصي</div>
+<div class="status-box">
+<div id="queueInfo">بوابة الحجز الفوري السحابية النشطة ⚡</div>
 </div>
-    
-
+<div id="bookingForm">
+<div class="form-group">
+<label>اسم المراجع الثلاثي الكامِل:</label>
+<input type="text" id="txtPatientName" placeholder="اكتب اسم المريض الثلاثي...">
+</div>
+<div class="form-group">
+<label>العمر:</label>
+<input type="number" id="txtPatientAge" placeholder="العمر..">
+</div>
+<div class="form-group">
+<label>الجنس:</label>
+<select id="cbPatientGender">
+<option value="ذكر">ذكر</option>
+<option value="أنثى">أنثى</option>
+</select>
+</div>
+<div class="form-group">
+<label>رقم هاتف المراجع للتواصل:</label>
+<input type="tel" id="txtPatientPhone" placeholder="07xxxxxxxxx">
+</div>
+<div class="form-group">
+<label>العنوان / السكن:</label>
+<input type="text" id="txtPatientAddress" placeholder="المحافظة / المنطقة">
+</div>
+<button id="btnSubmitBooking" onclick="executeSecureClientBooking()">⚡ تثبيت وتأكيد الحجز الفوري</button>
+</div>
+<div class="footer-note">نظام الحجز الذاتي السحابي المشترك © HALA Clinic System</div>
+</div>
+<div id="customAlert" class="custom-alert-overlay">
+<div class="custom-alert-box">
+<h3>🎉 نجاح الحجز</h3>
+<p>تم تسجيل الحجز بنجاح ومزامنته مع نظام العيادة الرئيسي.</p>
+<button onclick="closeCustomAlert()">موافق</button>
+</div>
+</div>
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // 🧠 [محرك التخزين الدائم للذاكرة الصلبة]: التحقق من الرابط أو استعادة البيانات القديمة من الهاتف وللأبد
-    let clinicId = urlParams.get('clinic');
-    if (clinicId) {
-        localStorage.setItem('hala_clinic_id', clinicId);
-    } else {
-        clinicId = localStorage.getItem('hala_clinic_id') || 'FallbackClinicID';
-    }
-    
-    let paramClinicName = urlParams.get('cName');
-    if (paramClinicName) {
-        localStorage.setItem('hala_clinic_name', decodeURIComponent(paramClinicName));
-    } else {
-        paramClinicName = localStorage.getItem('hala_clinic_name');
-    }
-
-    let paramDoctorName = urlParams.get('drName') || urlParams.get('dName');
-    if (paramDoctorName) {
-        localStorage.setItem('hala_doctor_name', decodeURIComponent(paramDoctorName));
-    } else {
-        paramDoctorName = localStorage.getItem('hala_doctor_name');
-    }
-
-    // تفكيك نطاق السحاب لمنع التحريف والالتفاف الرقمي
-    const cloudParts = ["ht", "tps", "://", "halaclinicdb", "-default-rtdb", ".firebaseio", ".com"];
-    const firebaseBaseUrl = cloudParts.join("");
-    
-    let deferredPrompt;
-
-    window.onload = function() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(()=>{
-                console.log("SW OK");
-            }).catch(err=>console.log(err));
-        }
-
-        // حقن العرض المباشر من الذاكرة الداخلية الصلبة دون اعتماد على الحاسبة
-        if (paramClinicName) {
-            document.getElementById('lblClinicName').innerText = paramClinicName;
-        }
-        if (paramDoctorName) {
-            document.getElementById('lblDoctorName').innerText = paramDoctorName;
-        }
-    };
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('pwaInstallBtn').style.display = 'block';
-    });
-
-    function triggerPwaInstallation() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    document.getElementById('pwaInstallBtn').style.display = 'none';
-                }
-                deferredPrompt = null;
-            });
-        } else {
-            alert("لتثبيت التطبيق على جهازك الذكي ومتابعته من المنزل:\n1. اضغط على زر خيارات المتصفح (الثلاث نقاط في الأعلى أو الأسفل).\n2. اختر 'إضافة إلى الشاشة الرئيسية' (Add to Home screen) أو 'تثبيت التطبيق'.");
-        }
-    }
-
-    async function executeSecureClientBooking() {
-        const name = document.getElementById('txtPatientName').value.trim();
-        const age = document.getElementById('txtPatientAge').value.trim();
-        const gender = document.getElementById('cbPatientGender').value;
-        const phone = document.getElementById('txtPatientPhone').value.trim();
-        const address = document.getElementById('txtPatientAddress').value.trim();
-
-        if(!name || name.length < 6){
-            alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");
-            return;
-        }
-        if(!age || age < 1 || age > 110){
-            alert("يرجى إدخال عمر صحيح.");
-            return;
-        }
-        if(!phone || phone.length < 10){
-            alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام على الأقل.");
-            return;
-        }
-
-        document.getElementById('btnSubmitBooking').disabled = true;
-        document.getElementById('btnSubmitBooking').innerText = "⏳ جاري حفظ مقعدك سحابياً...";
-
-        const payload = {
-            PatientName: name,
-            Age: age,
-            Gender: gender,
-            Phone: phone,
-            Address: address || "غير محدد",
-            Timestamp: new Date().toISOString()
-        };
-
-        try {
-            const response = await fetch(firebaseBaseUrl + "/clinics/" + clinicId + ".json", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            if(response.ok){
-                alert("🎉 تم تسجيل الحجز بنجاح ومزامنته مع نظام العيادة الرئيسي.");
-                document.getElementById('txtPatientName').value = '';
-                document.getElementById('txtPatientAge').value = '';
-                document.getElementById('txtPatientPhone').value = '';
-                document.getElementById('txtPatientAddress').value = '';
-            } else {
-                throw new Error("Error");
-            }
-        } catch(error){
-            alert("حدث خطأ في الاتصال بالسحاب، يرجى إعادة المحاولة.");
-        } finally {
-            document.getElementById('btnSubmitBooking').disabled = false;
-            document.getElementById('btnSubmitBooking').innerText = "⚡ تثبيت وتأكيد الحجز الفوري";
-        }
-    }
+const urlParams = new URLSearchParams(window.location.search);
+let clinicId = urlParams.get('clinic');
+if(clinicId){
+localStorage.setItem('hala_clinic_id',clinicId);
+}else{
+clinicId = localStorage.getItem('hala_clinic_id')||'FallbackClinicID';
+}
+let paramClinicName = urlParams.get('cName');
+if(paramClinicName){
+localStorage.setItem('hala_clinic_name',decodeURIComponent(paramClinicName));
+}else{
+paramClinicName = localStorage.getItem('hala_clinic_name');
+}
+let paramDoctorName = urlParams.get('drName')||urlParams.get('dName');
+if(paramDoctorName){
+localStorage.setItem('hala_doctor_name',decodeURIComponent(paramDoctorName));
+}else{
+paramDoctorName = localStorage.getItem('hala_doctor_name');
+}
+const cloudParts = ["ht","tps","://","halaclinicdb","-default-rtdb",".firebaseio",".com"];
+const firebaseBaseUrl = cloudParts.join("");
+let deferredPrompt;
+window.onload = function(){
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('./sw.js').then(()=>{}).catch(err=>console.log(err));
+}
+if(paramClinicName){
+document.getElementById('lblClinicName').innerText = paramClinicName;
+}
+if(paramDoctorName){
+document.getElementById('lblDoctorName').innerText = paramDoctorName;
+}
+};
+window.addEventListener('beforeinstallprompt',(e)=>{
+e.preventDefault();
+deferredPrompt = e;
+document.getElementById('pwaInstallBtn').style.display = 'block';
+});
+function triggerPwaInstallation(){
+if(deferredPrompt){
+deferredPrompt.prompt();
+deferredPrompt.userChoice.then((choiceResult)=>{
+if(choiceResult.outcome === 'accepted'){
+document.getElementById('pwaInstallBtn').style.display = 'none';
+}
+deferredPrompt = null;
+});
+}else{
+alert("لتثبيت التطبيق على جهازك الذكي ومتابعته من المنزل:\n1. اضغط على زر خيارات المتصفح.\n2. اختر 'إضافة إلى الشاشة الرئيسية' أو 'تثبيت التطبيق'.");
+}
+}
+function showSuccessAlert(){
+document.getElementById('customAlert').style.display = 'flex';
+}
+function closeCustomAlert(){
+document.getElementById('customAlert').style.display = 'none';
+}
+async function executeSecureClientBooking(){
+const name = document.getElementById('txtPatientName').value.trim();
+const age = document.getElementById('txtPatientAge').value.trim();
+const gender = document.getElementById('cbPatientGender').value;
+const phone = document.getElementById('txtPatientPhone').value.trim();
+const address = document.getElementById('txtPatientAddress').value.trim();
+if(!name||name.length < 6){
+alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");
+return;
+}
+if(!age||age < 1||age > 110){
+alert("يرجى إدخال عمر صحيح.");
+return;
+}
+if(!phone||phone.length < 10){
+alert("يرجى إدخال رقم هاتف صحيح ومكون من 10 أرقام على الأقل.");
+return;
+}
+document.getElementById('btnSubmitBooking').disabled = true;
+document.getElementById('btnSubmitBooking').innerText = "⏳ جاري حفظ مقعدك سحابياً...";
+const payload = {
+PatientName: name,
+Age: age,
+Gender: gender,
+Phone: phone,
+Address: address||"غير محدد",
+Timestamp: new Date().toISOString()
+};
+try{
+const response = await fetch(firebaseBaseUrl+"/clinics/"+clinicId+".json",{
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify(payload)
+});
+if(response.ok){
+showSuccessAlert();
+document.getElementById('txtPatientName').value = '';
+document.getElementById('txtPatientAge').value = '';
+document.getElementById('txtPatientPhone').value = '';
+document.getElementById('txtPatientAddress').value = '';
+}else{
+throw new Error("Error");
+}
+}catch(error){
+alert("حدث خطأ في الاتصال بالسحاب، يرجى إعادة المحاولة.");
+}finally{
+document.getElementById('btnSubmitBooking').disabled = false;
+document.getElementById('btnSubmitBooking').innerText = "⚡ تثبيت وتأكيد الحجز الفوري";
+}
+}
 </script>
 </body>
 </html>
