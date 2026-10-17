@@ -108,9 +108,14 @@ if('serviceWorker' in navigator){
 navigator.serviceWorker.register('./sw.js').then(()=>{}).catch(err=>console.log(err));
 }
 
-// إظهار حقل الهاتف وتعبئته تلقائياً بالمعطيات الافتراضية مع السماح بالتعديل المطلق
+// 🚀 [الفصل والتفريغ الحتمي لحقل الهاتف]: 
+// إذا كان المستخدم هو السكرتير، نترك الحقل فارغاً تماماً لإدخال رقم المريض، ويملأ تلقائياً فقط للمراجع لمنع تكرار الإدخال
 if(paramClinicPhone && document.getElementById('txtPatientPhone')){
-document.getElementById('txtPatientPhone').value = paramClinicPhone;
+    if (paramRole === 'secretary') {
+        document.getElementById('txtPatientPhone').value = '';
+    } else {
+        document.getElementById('txtPatientPhone').value = paramClinicPhone;
+    }
 }
 
 // محرك السحب السحابي الذاتي الديناميكي لبوابة الـ White-Label
@@ -215,7 +220,6 @@ if(!age||age < 1||age > 110){
 alert("يرجى إدخال عمر صحيح.");
 return;
 }
-// 🚀 [تصحيح هندسي حاسم للفحص]: تم إصلاح التعبير النمطي المكسور وإزالة الرموز الزائدة لتقرأ الأرقام فوراً وتختفي الرسالة تماماً من لوحة السكرتير والمريض
 if(!phone||phone.length < 10||!/^\d+\$/.test(phone)){
 alert("يرجى إدخال رقم هاتف فعال ومكون من أرقام فقط لتوثيق الهوية الحقيقية.");
 return;
@@ -251,7 +255,7 @@ if (paramRole === 'secretary' || paramRole === '') {
             document.getElementById('txtPatientName').value = '';
             document.getElementById('txtPatientAge').value = '';
             document.getElementById('txtPatientAddress').value = '';
-            // السكرتير لا يتم مسح حقل الهاتف لديه لتسهيل التعديل المتكرر
+            document.getElementById('txtPatientPhone').value = ''; // تصفير الهاتف للسكرتير بعد الإرسال الناجح للمريض التالي
             document.getElementById('btnSubmitBooking').disabled = false;
             document.getElementById('btnSubmitBooking').innerText = "✓ موافقة وتأكيد الحجز الفوري عبر واتساب";
             showSuccessAlert();
