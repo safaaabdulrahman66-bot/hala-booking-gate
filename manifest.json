@@ -1,7 +1,7 @@
 {
   "short_name": "بوابة الحجز",
   "name": "بوابة الحجز الإلكتروني الذكي",
-  "start_url": "index.html",
+  "start_url": "./",
   "background_color": "#f8fafc",
   "theme_color": "#1e293b",
   "display": "standalone",
