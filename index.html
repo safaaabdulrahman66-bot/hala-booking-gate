@@ -80,7 +80,7 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 
 
 
-  <script>
+<script>
 const urlParams = new URLSearchParams(window.location.search);
 let clinicId = urlParams.get('clinic');
 if(clinicId){
@@ -123,23 +123,26 @@ if(paramDoctorName){
 document.getElementById('lblDoctorName').innerText = paramDoctorName;
 }
 
-// 🔒 [درع مكافحة المسيئين التلقائي]: فحص البصمة الزمنية لمنع إعادة الحجز على نفس العيادة قبل مرور 24 ساعة
-const blockKey = "hala_block_until_" + clinicId;
-const blockedTimestamp = localStorage.getItem(blockKey);
-if (blockedTimestamp) {
-    const timeRemaining = parseInt(blockedTimestamp) - Date.now();
-    if (timeRemaining > 0) {
-        const remainingHours = Math.ceil(timeRemaining / (1000 * 60 * 60));
-        document.getElementById('bookingForm').innerHTML = `
-            <div style="padding: 15px; background: #fff8e1; color: #b78103; border-radius: 8px; font-weight: bold; border-right: 5px solid #ffb300; margin: 15px 0; font-size: 14px;">
-                🛑 حظر أمني حتمي: لقد قمت بتأكيد حجز مسبق بالفعل من هذا الهاتف خلال الـ 24 ساعة الماضية!<br><br>
-                النظام التجاري يمنع التلاعب المتكرر. يمكنك إعادة استخدام البوابة مجدداً بعد متبقي [ ${remainingHours} ساعة ].
-            </div>
-        `;
-    } else {
-        localStorage.removeItem(blockKey);
+// 🔒 [تثبيت قانون العزل المطلق]: جدار حماية وحظر الـ 24 ساعة يتفعل ويشتغل *فقط وحصراً* إذا كان الداخل مريضاً حقيقياً (role=patient)
+if (paramRole === 'patient') {
+    const blockKey = "hala_block_until_" + clinicId;
+    const blockedTimestamp = localStorage.getItem(blockKey);
+    if (blockedTimestamp) {
+        const timeRemaining = parseInt(blockedTimestamp) - Date.now();
+        if (timeRemaining > 0) {
+            const remainingHours = Math.ceil(timeRemaining / (1000 * 60 * 60));
+            document.getElementById('bookingForm').innerHTML = `
+                <div style="padding: 15px; background: #fff8e1; color: #b78103; border-radius: 8px; font-weight: bold; border-right: 5px solid #ffb300; margin: 15px 0; font-size: 14px; text-align:center;">
+                    🛑 حظر أمني حتمي: لقد قمت بتأكيد حجز مسبق بالفعل من هذا الهاتف خلال الـ 24 ساعة الماضية!<br><br>
+                    النظام التجاري يمنع التلاعب المتكرر. يمكنك إعادة استخدام البوابة مجدداً بعد متبقي [ ${remainingHours} ساعة ].
+                </div>
+            `;
+        } else {
+            localStorage.removeItem(blockKey);
+        }
     }
 }
+// 💡 إذا كان الداخل هو السكرتير (role=secretary)، يتم تخطي الحظر تلقائياً لتظل اللوحة والربط لديه نشطاً ومفتوحاً للأبد دون تداخل
 };
 
 window.addEventListener('beforeinstallprompt',(e)=>{
@@ -216,8 +219,7 @@ if(targetClinicNumber.startsWith('0')){
     targetClinicNumber = '964' + targetClinicNumber.substring(1);
 }
 
-// 🔒 [تفعيل قفل الـ 24 ساعة البصمي]: تسجيل حظر فوري للهاتف لمنع تكرار المحاولات
-const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // طابع 24 ساعة حتمية من اللحظة الحالية
+const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
 localStorage.setItem("hala_block_until_" + clinicId, expiryTime.toString());
 
 setTimeout(function(){
@@ -231,7 +233,6 @@ setTimeout(function(){
     document.getElementById('btnSubmitBooking').disabled = false;
     document.getElementById('btnSubmitBooking').innerText = "✓ موافقة وتأكيد الحجز الفوري عبر واتساب";
     
-    // تجديد عرض الصفحة الفوري ليعكس وضع الحظر المباشر
     window.location.reload();
 }, 1000);
 }
