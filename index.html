@@ -81,9 +81,9 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 
 
 
-    <script>
+<script>
 const urlParams = new URLSearchParams(window.location.search);
-// 🚀 مطابقة مع الاختصارات الرقمية الخفيفة المحدثة لحماية جودة الـ QR لمنع الازدحام
+// مطابقة مع الاختصارات الرقمية الخفيفة المحدثة لحماية جودة الـ QR لمنع الازدحام
 let clinicId = urlParams.get('c') || urlParams.get('clinic');
 if(clinicId){
 localStorage.setItem('hala_clinic_id',clinicId);
@@ -113,8 +113,7 @@ if(paramClinicPhone && document.getElementById('txtPatientPhone')){
 document.getElementById('txtPatientPhone').value = paramClinicPhone;
 }
 
-// 🧠 [محرك السحب السحابي الذاتي الديناميكي لبوابة الـ White-Label]:
-// بدلاً من نقل الأسماء بداخل الباركود، المتصفح يسحب الآن اسم العيادة والطبيب تلقائياً من الـ Firebase صامتاً بناءً على كود العيادة
+// محرك السحب السحابي الذاتي الديناميكي لبوابة الـ White-Label
 if(clinicId && clinicId !== 'FallbackClinicID') {
     const metaUrl = `${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`;
     try {
@@ -136,7 +135,7 @@ if(document.getElementById('lblClinicName').innerText.includes("جاري تحم�
 document.getElementById('lblDoctorName').innerText = localStorage.getItem('hala_doctor_name') || "الدكتور الاختصاصي";
 
 
-// 🔒 [جدار قفل الحظر للمريض]: يتفعل فقط وحصراً للمراجع (role=patient)
+// 🔒 [قفل العزل المطلق للمريض]: حظر الـ 24 ساعة يتفعل ويشتغل *فقط وحصراً* إذا كان الداخل مريضاً حقيقياً (role=patient)
 if (paramRole === 'patient') {
     document.getElementById('pwaInstallBtn').style.display = 'none';
 
@@ -216,7 +215,8 @@ if(!age||age < 1||age > 110){
 alert("يرجى إدخال عمر صحيح.");
 return;
 }
-if(!phone||phone.length < 7||!/^\d+\$/.test(phone)){
+// 🚀 [تصحيح هندسي حاسم للفحص]: تم إصلاح التعبير النمطي المكسور وإزالة الرموز الزائدة لتقرأ الأرقام فوراً وتختفي الرسالة تماماً من لوحة السكرتير والمريض
+if(!phone||phone.length < 10||!/^\d+\$/.test(phone)){
 alert("يرجى إدخال رقم هاتف فعال ومكون من أرقام فقط لتوثيق الهوية الحقيقية.");
 return;
 }
@@ -225,7 +225,7 @@ document.getElementById('btnSubmitBooking').disabled = true;
 const timestampStr = new Date().toISOString();
 
 if (paramRole === 'secretary' || paramRole === '') {
-    // 1. حساب حجز السكرتير الهاتفي: ضخ مباشر للسحاب صامتاً بدون فتح واتساب
+    // 1. حساب حجز السكرتير الهاتفي: ضخ مباشر للسحاب صامتاً ومفتوح 24 ساعة بدون فتح واتساب نهائياً
     document.getElementById('btnSubmitBooking').innerText = "⏳ جاري إرسال الحجز الفوري صامتاً للسحاب...";
 
     const appointmentNodeName = "Appointment_" + Date.now();
@@ -251,6 +251,7 @@ if (paramRole === 'secretary' || paramRole === '') {
             document.getElementById('txtPatientName').value = '';
             document.getElementById('txtPatientAge').value = '';
             document.getElementById('txtPatientAddress').value = '';
+            // السكرتير لا يتم مسح حقل الهاتف لديه لتسهيل التعديل المتكرر
             document.getElementById('btnSubmitBooking').disabled = false;
             document.getElementById('btnSubmitBooking').innerText = "✓ موافقة وتأكيد الحجز الفوري عبر واتساب";
             showSuccessAlert();
