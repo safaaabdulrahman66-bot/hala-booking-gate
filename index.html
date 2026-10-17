@@ -29,24 +29,17 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 .custom-alert-box button:hover{background:#0f172a;}
 .btn-cancel-booking{background:#ef4444;color:white;margin-top:4px;}
 .btn-cancel-booking:hover{background:#dc2626;}
-.lock-screen { display:none; color:#ef4444; font-weight:bold; padding:20px; font-size:16px; line-height:1.6; }
 @keyframes popIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
 </style>
 </head>
 <body>
 <div class="card" id="pwaMainCard">
 <button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
-<h2 id="lblClinicName">جاري تحميل اسم العيادة...</h2>
-<div id="lblDoctorName" class="dr-name">جاري تحميل اسم الطبيب...</div>
+<h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
+<div id="lblDoctorName" class="dr-name">الدكتور الاختصاصي</div>
 <div class="status-box">
 <div id="queueInfo">بوابة الحجز الفوري السحابية النشطة ⚡</div>
 </div>
-
-<!-- رسالة الحظر في حال كان المريض قد حجز بالفعل خلال الـ 24 ساعة الماضية -->
-<div id="lockMessage" class="lock-screen">
-⚠️ عذراً، لقد قمت بإجراء عملية حجز مسبقة خلال الـ 24 ساعة الماضية.<br>تم قفل الصفحة مؤقتاً لحسابك لمنع الحجوزات المتكررة والتلاعب.
-</div>
-
 <div id="bookingForm">
 <div class="form-group">
 <label>اسم المراجع الثلاثي الكامِل:</label>
@@ -63,8 +56,8 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 <option value="أنثى">أنثى</option>
 </select>
 </div>
-<!-- تم تحويل حقل الهاتف ليكون مخفياً أو يملأ تلقائياً لمنع التداخل والطلب غير الصحيح -->
-<div class="form-group" id="phoneFormGroup" style="display:none;">
+<!-- 🚀 [تأكيد الحضور البصري حتمياً]: تثبيت وإظهار حقل الهاتف ليكون مرئياً ونشطاً بالكامل دون إخفاء -->
+<div class="form-group" id="phoneFormGroup">
 <label>رقم هاتف المراجع للتواصل:</label>
 <input type="tel" id="txtPatientPhone" placeholder="07xxxxxxxxx">
 </div>
@@ -87,27 +80,18 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 
 
 
-<script>
+
+    <script>
 const urlParams = new URLSearchParams(window.location.search);
-let clinicId = urlParams.get('clinic');
+// 🚀 مطابقة مع الاختصارات الرقمية الخفيفة المحدثة لحماية جودة الـ QR لمنع الازدحام
+let clinicId = urlParams.get('c') || urlParams.get('clinic');
 if(clinicId){
 localStorage.setItem('hala_clinic_id',clinicId);
 }else{
 clinicId = localStorage.getItem('hala_clinic_id')||'FallbackClinicID';
 }
-let paramClinicName = urlParams.get('cName');
-if(paramClinicName){
-localStorage.setItem('hala_clinic_name',decodeURIComponent(paramClinicName));
-}else{
-paramClinicName = localStorage.getItem('hala_clinic_name');
-}
-let paramDoctorName = urlParams.get('drName')||urlParams.get('dName');
-if(paramDoctorName){
-localStorage.setItem('hala_doctor_name',decodeURIComponent(paramDoctorName));
-}else{
-paramDoctorName = localStorage.getItem('hala_doctor_name');
-}
-let paramClinicPhone = urlParams.get('cPhone');
+
+let paramClinicPhone = urlParams.get('p') || urlParams.get('cPhone');
 if(paramClinicPhone){
 localStorage.setItem('hala_clinic_phone',decodeURIComponent(paramClinicPhone));
 }else{
@@ -119,30 +103,40 @@ const cloudParts = ["ht","tps","://","halaclinicdb","-default-rtdb",".firebaseio
 const firebaseBaseUrl = cloudParts.join("");
 let deferredPrompt;
 
-window.onload = function(){
+window.onload = async function(){
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('./sw.js').then(()=>{}).catch(err=>console.log(err));
 }
 
-// الحقن الديناميكي الكامل لعرض الهوية التجارية الحقيقية الحالية للعيادة والطبيب
-if(paramClinicName){
-document.getElementById('lblClinicName').innerText = paramClinicName;
-}else{
-document.getElementById('lblClinicName').innerText = localStorage.getItem('hala_clinic_name') || "العيادة الطبية التخصصية";
-}
-
-if(paramDoctorName){
-document.getElementById('lblDoctorName').innerText = paramDoctorName;
-}else{
-document.getElementById('lblDoctorName').innerText = localStorage.getItem('hala_doctor_name') || "الدكتور الاختصاصي";
-}
-
-// ملء حقل الهاتف تلقائياً من رقم تذكرة التحقق الفريد لمنع تكرار الإدخال
-if(paramClinicPhone){
+// إظهار حقل الهاتف وتعبئته تلقائياً بالمعطيات الافتراضية مع السماح بالتعديل المطلق
+if(paramClinicPhone && document.getElementById('txtPatientPhone')){
 document.getElementById('txtPatientPhone').value = paramClinicPhone;
 }
 
-// 🔒 [قفل العزل المطلق للمريض]: حظر الـ 24 ساعة يتفعل ويشتغل *فقط وحصراً* إذا كان الداخل مريضاً حقيقياً (role=patient)
+// 🧠 [محرك السحب السحابي الذاتي الديناميكي لبوابة الـ White-Label]:
+// بدلاً من نقل الأسماء بداخل الباركود، المتصفح يسحب الآن اسم العيادة والطبيب تلقائياً من الـ Firebase صامتاً بناءً على كود العيادة
+if(clinicId && clinicId !== 'FallbackClinicID') {
+    const metaUrl = `${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`;
+    try {
+        const res = await fetch(metaUrl);
+        if(res.ok) {
+            const metaData = await res.json();
+            if(metaData && metaData.ClinicName) {
+                document.getElementById('lblClinicName').innerText = metaData.ClinicName;
+                localStorage.setItem('hala_clinic_name', metaData.ClinicName);
+            }
+        }
+    } catch(e) { }
+}
+
+// جلب البيانات المخزنة محلياً في حال انقطاع الشبكة المؤقت
+if(document.getElementById('lblClinicName').innerText.includes("جاري تحميل")) {
+    document.getElementById('lblClinicName').innerText = localStorage.getItem('hala_clinic_name') || "العيادة الطبية التخصصية";
+}
+document.getElementById('lblDoctorName').innerText = localStorage.getItem('hala_doctor_name') || "الدكتور الاختصاصي";
+
+
+// 🔒 [جدار قفل الحظر للمريض]: يتفعل فقط وحصراً للمراجع (role=patient)
 if (paramRole === 'patient') {
     document.getElementById('pwaInstallBtn').style.display = 'none';
 
@@ -158,12 +152,12 @@ if (paramRole === 'patient') {
                     النظام التجاري يمنع التلاعب المتكرر. يمكنك إعادة استخدام البوابة مجدداً بعد متبقي [ ${remainingHours} ساعة ].
                 </div>
             `;
+            return;
         } else {
             localStorage.removeItem(blockKey);
         }
     }
 }
-// 💡 إذا كان الداخل هو السكرتير (role=secretary)، يتم تخطي الحظر تلقائياً لتظل لوحته وهاتفه نشطاً ومفتوحاً للأبد 24 ساعة
 };
 
 window.addEventListener('beforeinstallprompt',(e)=>{
@@ -222,27 +216,20 @@ if(!age||age < 1||age > 110){
 alert("يرجى إدخال عمر صحيح.");
 return;
 }
-if(!phone||phone.length < 7){
+if(!phone||phone.length < 7||!/^\d+\$/.test(phone)){
 alert("يرجى إدخال رقم هاتف فعال ومكون من أرقام فقط لتوثيق الهوية الحقيقية.");
 return;
 }
 
 document.getElementById('btnSubmitBooking').disabled = true;
-
-const payloadParts = clinicId.split('-');
-const extractedClinicUniqueId = payloadParts[0];
-const targetBookingNo = payloadParts[1]||'---';
-
-const secureToken = Math.floor(100000 + Math.random() * 900000);
 const timestampStr = new Date().toISOString();
 
-// 🚀 [الفصل الجذري والتحويل الذكي]: التحكم في وجهة البيانات ومسار الواجهة بناءً على صلاحية السكرتير أو المريض
 if (paramRole === 'secretary' || paramRole === '') {
-    // 1. صلاحيات السكرتارية في الهاتف: الحجز المباشر المباشر والآمن داخل السحاب صامتاً بدون فتح الواتساب نهائياً
+    // 1. حساب حجز السكرتير الهاتفي: ضخ مباشر للسحاب صامتاً بدون فتح واتساب
     document.getElementById('btnSubmitBooking').innerText = "⏳ جاري إرسال الحجز الفوري صامتاً للسحاب...";
 
     const appointmentNodeName = "Appointment_" + Date.now();
-    const targetFirebaseNodeUrl = `${firebaseBaseUrl}/clinics/${extractedClinicUniqueId}/${appointmentNodeName}.json`;
+    const targetFirebaseNodeUrl = `${firebaseBaseUrl}/clinics/${clinicId}/${appointmentNodeName}.json`;
 
     const appointmentPayload = {
         PatientName: name,
@@ -261,14 +248,11 @@ if (paramRole === 'secretary' || paramRole === '') {
         });
 
         if (response.ok) {
-            // تفريغ فوري للحقول بداخل لوحة هاتف السكرتير لتجهيزها للمريض التالي بمرونة تامة
             document.getElementById('txtPatientName').value = '';
             document.getElementById('txtPatientAge').value = '';
             document.getElementById('txtPatientAddress').value = '';
             document.getElementById('btnSubmitBooking').disabled = false;
             document.getElementById('btnSubmitBooking').innerText = "✓ موافقة وتأكيد الحجز الفوري عبر واتساب";
-            
-            // إطلاق منبه التنبيه المنبثق المحلي بالنجاح مباشرة للسكرتير دون إزعاجه بنوافذ خارجية
             showSuccessAlert();
         } else {
             alert("فشل اتصال المزامنة السحابية المؤقت، يرجى التحقق من شبكة الإنترنت بالعيادة.");
@@ -280,10 +264,11 @@ if (paramRole === 'secretary' || paramRole === '') {
     }
 
 } else {
-    // 2. صلاحيات المراجع والمريض (role=patient): تحويله إجبارياً لواتساب الأمان لتوثيق الهوية وحظر التلاعب 24 ساعة
+    // 2. حساب المراجع والمريض (role=patient): تحويل لواتساب التوثيق المطور وحظر الـ 24 ساعة
     document.getElementById('btnSubmitBooking').innerText = "⏳ جاري تحويلك لواتس اب الأمان...";
 
-    const messageBody = `✨ طلب تأكيد حجز ذاتي منظومة هَلا الطبية ✨\n\n🏥 العيادة: ${document.getElementById('lblClinicName').innerText}\n👨‍⚕️ الطبيب: ${document.getElementById('lblDoctorName').innerText}\n🔑 كود الأمان المشفر: [HALA-${secureToken}]\n💻 معرف المحطة الثابت: ${extractedClinicUniqueId}\n📱 هاتف المراجع للتوثيق: ${phone}\n👤 اسم المريض: ${name}\n🎂 العمر: ${age} سنة (${gender})\n📍 السكن: ${address||"غير محدد"}\n\n*اضغط إرسال الآن لتفعيل الحجز الصامت في طابور اليوم تلقائياً دون تكرار.*`;
+    const secureToken = Math.floor(100000 + Math.random() * 900000);
+    const messageBody = `✨ طلب تأكيد حجز ذاتي منظومة هَلا الطبية ✨\n\n🏥 العيادة: ${document.getElementById('lblClinicName').innerText}\n👨‍⚕️ الطبيب: ${document.getElementById('lblDoctorName').innerText}\n🔑 كود الأمان المشفر: [HALA-${secureToken}]\n💻 معرف المحطة الثابت: ${clinicId}\n📱 هاتف المراجع للتوثيق: ${phone}\n👤 اسم المريض: ${name}\n🎂 العمر: ${age} سنة (${gender})\n📍 السكن: ${address||"غير محدد"}\n\n*اضغط إرسال الآن لتفعيل الحجز الصامت في طابور اليوم تلقائياً دون تكرار.*`;
 
     let targetClinicNumber = paramClinicPhone||'';
     if(targetClinicNumber.startsWith('0')){
