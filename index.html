@@ -108,7 +108,7 @@ paramClinicPhone = localStorage.getItem('hala_clinic_phone')||'';
 }
 let paramRole = urlParams.get('role')||'';
 
-const cloudParts = ["ht","tps","://","halaclimb","-default-rtdb",".firebaseio",".com"];
+const cloudParts = ["ht","tps","://","halaclinicdb","-default-rtdb",".firebaseio",".com"];
 const firebaseBaseUrl = cloudParts.join("");
 let deferredPrompt;
 
@@ -121,6 +121,24 @@ document.getElementById('lblClinicName').innerText = paramClinicName;
 }
 if(paramDoctorName){
 document.getElementById('lblDoctorName').innerText = paramDoctorName;
+}
+
+// 🔒 [درع مكافحة المسيئين التلقائي]: فحص البصمة الزمنية لمنع إعادة الحجز على نفس العيادة قبل مرور 24 ساعة
+const blockKey = "hala_block_until_" + clinicId;
+const blockedTimestamp = localStorage.getItem(blockKey);
+if (blockedTimestamp) {
+    const timeRemaining = parseInt(blockedTimestamp) - Date.now();
+    if (timeRemaining > 0) {
+        const remainingHours = Math.ceil(timeRemaining / (1000 * 60 * 60));
+        document.getElementById('bookingForm').innerHTML = `
+            <div style="padding: 15px; background: #fff8e1; color: #b78103; border-radius: 8px; font-weight: bold; border-right: 5px solid #ffb300; margin: 15px 0; font-size: 14px;">
+                🛑 حظر أمني حتمي: لقد قمت بتأكيد حجز مسبق بالفعل من هذا الهاتف خلال الـ 24 ساعة الماضية!<br><br>
+                النظام التجاري يمنع التلاعب المتكرر. يمكنك إعادة استخدام البوابة مجدداً بعد متبقي [ ${remainingHours} ساعة ].
+            </div>
+        `;
+    } else {
+        localStorage.removeItem(blockKey);
+    }
 }
 };
 
@@ -185,28 +203,26 @@ return;
 document.getElementById('btnSubmitBooking').disabled = true;
 document.getElementById('btnSubmitBooking').innerText = "⏳ جاري تحويلك لواتس اب الأمان...";
 
-// تفكيك تذكرة ومعرف الحجز المستخلص من الباركود
 const payloadParts = clinicId.split('-');
 const extractedClinicUniqueId = payloadParts[0];
 const targetBookingNo = payloadParts[1]||'---';
 
-// توليد كود أمان عشوائي صامت لتوثيق جدية المراجع ومطابقته بالسيرفر
 const secureToken = Math.floor(100000 + Math.random() * 900000);
 
-// صياغة نص الرسالة الرسمية المشفرة الموجهة لواتس اب العيادة لتوثيق الهوية المباشرة
 const messageBody = `✨ طلب تأكيد حجز ذاتي منظومة هَلا الطبية ✨\n\n🏥 العيادة: ${document.getElementById('lblClinicName').innerText}\n👨‍⚕️ الطبيب: ${document.getElementById('lblDoctorName').innerText}\n🔑 كود الأمان المشفر: [HALA-${secureToken}]\n💻 معرف المحطة الثابت: ${extractedClinicUniqueId}\n📱 هاتف المراجع للتوثيق: ${phone}\n👤 اسم المريض: ${name}\n🎂 العمر: ${age} سنة (${gender})\n📍 السكن: ${address||"غير محدد"}\n\n*اضغط إرسال الآن لتفعيل الحجز الصامت في طابور اليوم تلقائياً دون تكرار.*`;
 
-// تهيئة وضبط رقم العيادة المستقبل للتحويل الدولي لـ (964) لضمان الفتح الحتمي للبروتوكول
 let targetClinicNumber = paramClinicPhone||'';
 if(targetClinicNumber.startsWith('0')){
     targetClinicNumber = '964' + targetClinicNumber.substring(1);
 }
 
-// فتح تطبيق واتساب الفعلي المحمي في جهاز المريض وضخ رسالة التوثيق فوراً
+// 🔒 [تفعيل قفل الـ 24 ساعة البصمي]: تسجيل حظر فوري للهاتف لمنع تكرار المحاولات
+const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // طابع 24 ساعة حتمية من اللحظة الحالية
+localStorage.setItem("hala_block_until_" + clinicId, expiryTime.toString());
+
 setTimeout(function(){
     window.location.href = `https://whatsapp.com{targetClinicNumber}&text=${encodeURIComponent(messageBody)}`;
     
-    // إعادة تهيئة الصناديق الفوق استعداداً لاستقبال مريض آخر في بوابة الموبايل
     document.getElementById('txtPatientName').value = '';
     document.getElementById('txtPatientAge').value = '';
     document.getElementById('txtPatientPhone').value = '';
@@ -214,6 +230,9 @@ setTimeout(function(){
     
     document.getElementById('btnSubmitBooking').disabled = false;
     document.getElementById('btnSubmitBooking').innerText = "✓ موافقة وتأكيد الحجز الفوري عبر واتساب";
+    
+    // تجديد عرض الصفحة الفوري ليعكس وضع الحظر المباشر
+    window.location.reload();
 }, 1000);
 }
 </script>
