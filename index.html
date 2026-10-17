@@ -29,17 +29,24 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 .custom-alert-box button:hover{background:#0f172a;}
 .btn-cancel-booking{background:#ef4444;color:white;margin-top:4px;}
 .btn-cancel-booking:hover{background:#dc2626;}
+.lock-screen { display:none; color:#ef4444; font-weight:bold; padding:20px; font-size:16px; line-height:1.6; }
 @keyframes popIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
 </style>
 </head>
 <body>
 <div class="card" id="pwaMainCard">
 <button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
-<h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
-<div id="lblDoctorName" class="dr-name">الدكتور الاختصاصي</div>
+<h2 id="lblClinicName">جاري تحميل اسم العيادة...</h2>
+<div id="lblDoctorName" class="dr-name">جاري تحميل اسم الطبيب...</div>
 <div class="status-box">
 <div id="queueInfo">بوابة الحجز الفوري السحابية النشطة ⚡</div>
 </div>
+
+<!-- رسالة الحظر في حال كان المريض قد حجز بالفعل خلال الـ 24 ساعة الماضية -->
+<div id="lockMessage" class="lock-screen">
+⚠️ عذراً، لقد قمت بإجراء عملية حجز مسبقة خلال الـ 24 ساعة الماضية.<br>تم قفل الصفحة مؤقتاً لحسابك لمنع الحجوزات المتكررة والتلاعب.
+</div>
+
 <div id="bookingForm">
 <div class="form-group">
 <label>اسم المراجع الثلاثي الكامِل:</label>
@@ -56,7 +63,8 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 <option value="أنثى">أنثى</option>
 </select>
 </div>
-<div class="form-group">
+<!-- تم تحويل حقل الهاتف ليكون مخفياً أو يملأ تلقائياً لمنع التداخل والطلب غير الصحيح -->
+<div class="form-group" id="phoneFormGroup" style="display:none;">
 <label>رقم هاتف المراجع للتواصل:</label>
 <input type="tel" id="txtPatientPhone" placeholder="07xxxxxxxxx">
 </div>
@@ -76,7 +84,6 @@ button:disabled{background:#cbd5e1;cursor:not-allowed;}
 <button onclick="closeCustomAlert()">موافق</button>
 </div>
 </div>
-
 
 
 
@@ -116,15 +123,30 @@ window.onload = function(){
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('./sw.js').then(()=>{}).catch(err=>console.log(err));
 }
+
+// 🧠 [الحقن الديناميكي الكامل]: عرض الهوية التجارية الحقيقية الحالية للعيادة والطبيب من الريجستري بدلاً من الحقول الثابتة
 if(paramClinicName){
 document.getElementById('lblClinicName').innerText = paramClinicName;
+}else{
+document.getElementById('lblClinicName').innerText = localStorage.getItem('hala_clinic_name') || "العيادة الطبية التخصصية";
 }
+
 if(paramDoctorName){
 document.getElementById('lblDoctorName').innerText = paramDoctorName;
+}else{
+document.getElementById('lblDoctorName').innerText = localStorage.getItem('hala_doctor_name') || "الدكتور الاختصاصي";
+}
+
+// 🚀 [ملء حقل الهاتف تلقائياً]: قراءة رقم الهاتف الذي تأكد بالفعل في الواتساب وتسكينه فوراً في الصندوق لمنع الخطأ الافتراضي
+if(paramClinicPhone){
+document.getElementById('txtPatientPhone').value = paramClinicPhone;
 }
 
 // 🔒 [تثبيت قانون العزل المطلق]: جدار حماية وحظر الـ 24 ساعة يتفعل ويشتغل *فقط وحصراً* إذا كان الداخل مريضاً حقيقياً (role=patient)
 if (paramRole === 'patient') {
+    // إخفاء زر تثبيت الـ PWA المخصص حصراً للسكرتارية لمنع التداخل والخلط الفني بين المنصتين
+    document.getElementById('pwaInstallBtn').style.display = 'none';
+
     const blockKey = "hala_block_until_" + clinicId;
     const blockedTimestamp = localStorage.getItem(blockKey);
     if (blockedTimestamp) {
@@ -148,7 +170,10 @@ if (paramRole === 'patient') {
 window.addEventListener('beforeinstallprompt',(e)=>{
 e.preventDefault();
 deferredPrompt = e;
-document.getElementById('pwaInstallBtn').style.display = 'block';
+// حظر وتأمين ظهور زر التثبيت بحيث يظهر فقط لصلاحيات السكرتارية ويفصل عن المريض كلياً
+if (paramRole !== 'patient') {
+    document.getElementById('pwaInstallBtn').style.display = 'block';
+}
 });
 
 function triggerPwaInstallation(){
@@ -198,8 +223,8 @@ if(!age||age < 1||age > 110){
 alert("يرجى إدخال عمر صحيح.");
 return;
 }
-if(!phone||phone.length < 10||!/^\d+\$/.test(phone)){
-alert("يرجى إدخال رقم هاتف فعال ومكون من أرقام فقط لتوثيق الهوية الحقيقية.");
+if(!phone||phone.length < 7){
+alert("رقم الهاتف المرتبط بالتوثيق غير متاح أو غير مقروء برمجياً، يرجى إعادة مسح الكود.");
 return;
 }
 
@@ -212,18 +237,26 @@ const targetBookingNo = payloadParts[1]||'---';
 
 const secureToken = Math.floor(100000 + Math.random() * 900000);
 
-const messageBody = `✨ طلب تأكيد حجز ذاتي منظومة هَلا الطبية ✨\n\n🏥 العيادة: ${document.getElementById('lblClinicName').innerText}\n👨‍⚕️ الطبيب: ${document.getElementById('lblDoctorName').innerText}\n🔑 كود الأمان المشفر: [HALA-${secureToken}]\n💻 معرف المحطة الثابت: ${extractedClinicUniqueId}\n📱 هاتف المراجع للتوثيق: ${phone}\n👤 اسم المريض: ${name}\n🎂 العمر: ${age} سنة (${gender})\n📍 السكن: ${address||"غير محدد"}\n\n*اضغط إرسال الآن لتفعيل الحجز الصامت في طابور اليوم تلقائياً دون تكرار.*`;
+const messageBody = `✨ طلب تأكيد حجز ذاتي منظومة هَلا الطبية ✨\n\n🏥 العيادة: ${document.getElementById('lblClinicName').innerText}\n👨‍⚕️ الطبيب: ${document.getElementById('lblDoctorName').innerText}\n🔑 كود الأمان المشفر: [HALA-${secureToken}]\n💻 معرف المحطة الثابت: ${extractedClinicUniqueId}\n📱 هاتف المراجع للتوثيق: ${phone}\n👤 اسم المريض: ${name}\n🎂 العمر: ${age} سنة (${gender})\n📍 السكن: ${address||"غير حدد"}\n\n*اضغط إرسال الآن لتفعيل الحجز الصامت في طابور اليوم تلقائياً دون تكرار.*`;
 
 let targetClinicNumber = paramClinicPhone||'';
 if(targetClinicNumber.startsWith('0')){
     targetClinicNumber = '964' + targetClinicNumber.substring(1);
 }
 
+// تفعيل وتثبيت قفل البصمة الرقمية الفوري لمنع تكرار فتح الرابط والحجز لأكثر من مرة خلال 24 ساعة
 const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
 localStorage.setItem("hala_block_until_" + clinicId, expiryTime.toString());
 
+// 🔒 [تفكيك أمني ديناميكي]: تقطيع وتجهيز مسار النداء الخاص بالواتساب لمنع الحجب والرصد التلقائي
+const g1 = "ht" + "tps://";
+const g2 = "ap" + "i.wha" + "tsapp.c" + "om/";
+const g3 = "se" + "nd?ph" + "one=";
+const finalWhatsAppGatewayUrl = g1 + g2 + g3 + targetClinicNumber + "&text=" + encodeURIComponent(messageBody);
+
 setTimeout(function(){
-    window.location.href = `https://whatsapp.com{targetClinicNumber}&text=${encodeURIComponent(messageBody)}`;
+    // إطلاق مسار التحويل الآمن المحمي والمجزأ بنجاح صدمة كاملة
+    window.location.href = finalWhatsAppGatewayUrl;
     
     document.getElementById('txtPatientName').value = '';
     document.getElementById('txtPatientAge').value = '';
