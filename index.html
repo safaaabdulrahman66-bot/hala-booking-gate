@@ -26,7 +26,16 @@
         h2 {
             text-align: center;
             color: #1e222d;
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+        h3 {
+            text-align: center;
+            color: #475569;
+            margin-top: 0;
             margin-bottom: 25px;
+            font-size: 16px;
+            font-weight: 600;
         }
         .form-group {
             margin-bottom: 18px;
@@ -100,7 +109,9 @@
 <body>
 
 <div id="mainAppWrapper" class="container">
-    <h2>طلب تثبيت حجز موعد جديد 🩺</h2>
+    <!-- 🚀 [الحقول الديناميكية المحقونة]: تم تصفير العناوين الثابتة لتستقبل اسم العيادة واللقب الطبي تلقائياً بالتزامن مع قاعدة البيانات السحابية الحية -->
+    <h2 id="lblDynamicClinicName">جاري جلب بيانات العيادة... 🩺</h2>
+    <h3 id="lblDynamicDoctorName">لوحة تثبيت المواعيد الفورية</h3>
     
     <div class="form-group">
         <label for="txtPatientName">اسم المريض الكامل:</label>
@@ -150,16 +161,39 @@
         };
     }
 
+    // 🚀 محرك الجلب والتحقق المشترك: يسحب الهوية الطبية الحية ويفحص بصمة الهاتف صامتاً في أول ميلي ثانية
     window.addEventListener('DOMContentLoaded', async () => {
         const params = getClinicAndPhoneParameters();
         const phoneField = document.getElementById("txtPhone");
+        
         if (!params.patientPhone) {
             alert("🚨 خطأ في بروتوكول فتح الرابط! يرجى الضغط على الرابط المرسل عبر الواتساب الرسمي للعيادة حصرًا.");
             document.getElementById("btnSubmit").disabled = true;
             return;
         }
+
         phoneField.value = params.patientPhone;
         const baseCloudUrl = buildCleanBaseCloudUrl();
+
+        // 1. محرك الحقن الحركي: سحب الهوية البصرية من نود كاش الترويسة المحدث من ريجستري الحاسبة الموحد
+        const metaFetchUrl = `${baseCloudUrl}clinics/${params.clinicId}/ClinicMetadata.json`;
+        try {
+            const metaResponse = await fetch(metaFetchUrl);
+            if (metaResponse.ok) {
+                const metaData = await metaResponse.json();
+                if (metaData && metaData.ClinicName) {
+                    document.getElementById("lblDynamicClinicName").innerText = metaData.ClinicName;
+                    document.getElementById("lblDynamicDoctorName").innerText = "طلب تثبيت حجز موعد جديد 🩺";
+                    document.title = metaData.ClinicName;
+                } else {
+                    document.getElementById("lblDynamicClinicName").innerText = "بوابة حجز المواعيد الإلكترونية 🩺";
+                }
+            }
+        } catch (e) {
+            document.getElementById("lblDynamicClinicName").innerText = "بوابة حجز المواعيد الإلكترونية 🩺";
+        }
+
+        // 2. محرك الحظر الاستباقي: فحص تكرار الرقم لنسف محتويات اللوحة فوراً في حالة وجود حجز مسبق
         const targetFetchUrl = `${baseCloudUrl}clinics/${params.clinicId}.json`;
         try {
             const response = await fetch(targetFetchUrl);
@@ -179,12 +213,14 @@
 
     function eraseScreenAndDisplayBan(phoneNum) {
         const wrapper = document.getElementById("mainAppWrapper");
+        const clinicTitle = document.getElementById("lblDynamicClinicName").innerText;
         wrapper.innerHTML = `
             <div class="ban-screen">
                 🛑 تنبيه أمني من منظومة الحجوزات 🛑<br><br>
                 نود إعلامكم بأن رقم الهاتف الخاص بكم:<br>
                 <span style="color: #ef4444; font-size: 18px; font-family: Consolas;">(${phoneNum})</span><br><br>
-                مسجل مسبقاً بالفعل في طابور حجوزات العيادة لهذا اليوم!<br><br>
+                مسجل مسبقاً بالفعل في طابور حجوزات:<br>
+                <span style="color: #1e3a8a; font-size: 16px;">[ ${clinicTitle} ]</span> لهذا اليوم!<br><br>
                 ⚠️ لا يمكن تكرار تسجيل الحجز مرتين في نفس اليوم، يرجى الحضور للعيادة مباشرة حسب تسلسلك المعتمد.
             </div>`;
     }
@@ -197,15 +233,19 @@
         const age = document.getElementById("txtAge").value.trim();
         const gender = document.getElementById("cbGender").value;
         const address = document.getElementById("txtAddress").value.trim();
+
         if (!name) {
             alert("يرجى إدخال اسم المريض الكامل.");
             return;
         }
+
         btn.disabled = true;
         btn.innerText = "جاري إرسال طلب حجزكم...";
+
         const currentTimestamp = new Date().toISOString();
         const randomSalt = Math.floor(100000 + Math.random() * 900000);
         const uniqueNodeKey = "Appointment_" + Date.now() + "_" + randomSalt;
+
         const appointmentData = {
             PatientName: name,
             Age: age ? age : "0",
@@ -214,31 +254,17 @@
             Address: address ? address : "غير محدد",
             Timestamp: currentTimestamp
         };
+
         const baseCloudUrl = buildCleanBaseCloudUrl();
         const finalSubmitUrl = `${baseCloudUrl}clinics/${params.clinicId}/${uniqueNodeKey}.json`;
+
         try {
             const response = await fetch(finalSubmitUrl, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(appointmentData)
             });
+
             if (response.ok) {
                 wrapper.innerHTML = `
                     <div class="success-screen">
-                        ✨ تم تسجيل وتثبيت موعدكم بنجاح ✨<br><br>
-                        المراجع المحترم: <span style="color: #10b981; font-size: 17px;">${name}</span><br><br>
-                        لقد تم إرسال بيانات حجزكم بنجاح إلى طابور الانتظار الخاص بالعيادة فوراً.<br><br>
-                        🩺 نتمنى لكم الشفاء العاجل.
-                    </div>`;
-            } else {
-                throw new Error("فشل الاستجابة");
-            }
-        } catch (error) {
-            alert("❌ فشل الاتصال! تأكد من جودة الإنترنت في هاتفك وحاول مجدداً.");
-            btn.disabled = false;
-            btn.innerText = "موافقة وتأكيد الحجز الفوري بالعيادة ⚡";
-        }
-    }
-</script>
-</body>
-</html>
