@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الحجز الفوري النشطة 🩺</title>
+    <title>بوابة حجز المواعيد الإلكترونية 🩺</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -100,7 +100,7 @@
 <body>
 
 <div id="mainAppWrapper" class="container">
-    <h2>طلب تثبيت الحجز الفوري 🩺</h2>
+    <h2>طلب تثبيت حجز موعد جديد 🩺</h2>
     
     <div class="form-group">
         <label for="txtPatientName">اسم المريض الكامل:</label>
@@ -121,7 +121,7 @@
     </div>
 
     <div class="form-group">
-        <label for="txtPhone">رقم الهاتف (موثق ومقفل تلقائياً):</label>
+        <label for="txtPhone">رقم هاتف المراجع (مقفل تلقائياً):</label>
         <input type="tel" id="txtPhone" readonly>
     </div>
 
@@ -130,11 +130,10 @@
         <input type="text" id="txtAddress" placeholder="المحافظة / المنطقة">
     </div>
 
-    <button id="btnSubmit" onclick="sendAppointmentToCloud()">موافقة وتأكيد الحجز الفوري عبر واتساب ⚡</button>
+    <button id="btnSubmit" onclick="sendAppointmentToCloud()">موافقة وتأكيد الحجز الفوري بالعيادة ⚡</button>
 </div>
 
 <script>
-    // 🔒 [تأمين حتمي للروابط سحابياً]: تقطيع وتفتيت مسارات قواعد البيانات لمنع تلاعب فلاتر جوجل كروم بالرابط
     function buildCleanBaseCloudUrl() {
         const u1 = "ht" + "tps://";
         const u2 = "halac" + "linicdb-de";
@@ -151,28 +150,22 @@
         };
     }
 
-    // 🚀 محرك الفحص الاستباقي الفوري: يطلق نبضة فحص عند تحميل الصفحة ويقضي على التكرار بنحت الشاشة كلياً
     window.addEventListener('DOMContentLoaded', async () => {
         const params = getClinicAndPhoneParameters();
         const phoneField = document.getElementById("txtPhone");
-        
         if (!params.patientPhone) {
-            alert("🚨 خطأ في بروتوكول فتح الرابط! يرجى قراءة الباركود مباشرة من رسالة الواتساب الرسمية.");
+            alert("🚨 خطأ في بروتوكول فتح الرابط! يرجى الضغط على الرابط المرسل عبر الواتساب الرسمي للعيادة حصرًا.");
             document.getElementById("btnSubmit").disabled = true;
             return;
         }
-
         phoneField.value = params.patientPhone;
-
         const baseCloudUrl = buildCleanBaseCloudUrl();
         const targetFetchUrl = `${baseCloudUrl}clinics/${params.clinicId}.json`;
-
         try {
             const response = await fetch(targetFetchUrl);
             if (response.ok) {
                 const data = await response.json();
                 if (data && typeof data === 'object') {
-                    // فحص تطابق رقم الهاتف الحالي مع أي حجز نشط مسجل ومحقون اليوم في رادار العيادة
                     for (const key in data) {
                         if (data[key] && data[key].Phone === params.patientPhone) {
                             eraseScreenAndDisplayBan(params.patientPhone);
@@ -181,20 +174,17 @@
                     }
                 }
             }
-        } catch (error) {
-            console.log("صامت - جاري تجاوز خطأ الفحص الاستباقي لضمان التدفق");
-        }
+        } catch (error) {}
     });
 
-    // 🛡️ دالة النحت والمحو الكلي لشجرة الـ HTML واستبدالها بجدار الحظر الأحمر الصارم
     function eraseScreenAndDisplayBan(phoneNum) {
         const wrapper = document.getElementById("mainAppWrapper");
         wrapper.innerHTML = `
             <div class="ban-screen">
-                🛑 تنبيه أمني صارم من المنظومة الموحدة 🛑<br><br>
-                عذراً، إن رقم الهاتف الحالي الموثق للواتساب:<br>
+                🛑 تنبيه أمني من منظومة الحجوزات 🛑<br><br>
+                نود إعلامكم بأن رقم الهاتف الخاص بكم:<br>
                 <span style="color: #ef4444; font-size: 18px; font-family: Consolas;">(${phoneNum})</span><br><br>
-                مسجل ومحقون مسبقاً بالفعل في طابور حجوزات العيادة لهذا اليوم!<br><br>
+                مسجل مسبقاً بالفعل في طابور حجوزات العيادة لهذا اليوم!<br><br>
                 ⚠️ لا يمكن تكرار تسجيل الحجز مرتين في نفس اليوم، يرجى الحضور للعيادة مباشرة حسب تسلسلك المعتمد.
             </div>`;
     }
@@ -203,62 +193,52 @@
         const params = getClinicAndPhoneParameters();
         const btn = document.getElementById("btnSubmit");
         const wrapper = document.getElementById("mainAppWrapper");
-
         const name = document.getElementById("txtPatientName").value.trim();
         const age = document.getElementById("txtAge").value.trim();
         const gender = document.getElementById("cbGender").value;
         const address = document.getElementById("txtAddress").value.trim();
-
         if (!name) {
             alert("يرجى إدخال اسم المريض الكامل.");
             return;
         }
-
         btn.disabled = true;
-        btn.innerText = "جاري بث وحقن حجزك سحابياً...";
-
+        btn.innerText = "جاري إرسال طلب حجزكم...";
         const currentTimestamp = new Date().toISOString();
         const randomSalt = Math.floor(100000 + Math.random() * 900000);
         const uniqueNodeKey = "Appointment_" + Date.now() + "_" + randomSalt;
-
         const appointmentData = {
             PatientName: name,
             Age: age ? age : "0",
             Gender: gender,
             Phone: params.patientPhone,
-            Address: address ? address : "غير محدد",
+            Address: address ? address : "غير مححدد",
             Timestamp: currentTimestamp
         };
-
         const baseCloudUrl = buildCleanBaseCloudUrl();
         const finalSubmitUrl = `${baseCloudUrl}clinics/${params.clinicId}/${uniqueNodeKey}.json`;
-
         try {
             const response = await fetch(finalSubmitUrl, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(appointmentData)
             });
-
             if (response.ok) {
-                // 🛡️ تدمير ومحو تذاكر إعادة الإرسال فوراً واستبدال الشاشة بلوحة الشفاء الخضراء الثابتة
                 wrapper.innerHTML = `
                     <div class="success-screen">
-                        ✨ تم تسجيل وتثبيت حجزك بنجاح تام ✨<br><br>
-                        الأخ/الأخت: <span style="color: #10b981; font-size: 17px;">${name}</span><br><br>
-                        لقد تم تمرير بياناتك صامتاً إلى رادار حاسبة السكرتير وطابور صالة الانتظار فوراً.<br><br>
+                        ✨ تم تسجيل وتثبيت موعدكم بنجاح ✨<br><br>
+                        المراجع المحترم: <span style="color: #10b981; font-size: 17px;">${name}</span><br><br>
+                        لقد تم إرسال بيانات حجزكم بنجاح إلى طابور الانتظار الخاص بالعيادة فوراً.<br><br>
                         🩺 نتمنى لكم الشفاء العاجل.
                     </div>`;
             } else {
-                throw new Error("فشل الاستجابة السحابية");
+                throw new Error("فشل الاستجابة");
             }
         } catch (error) {
-            alert("❌ فشل الاتصال بالسحاب! تأكد من جودة الإنترنت في هاتفك وحاول مجدداً.");
+            alert("❌ فشل الاتصال! تأكد من جودة الإنترنت في هاتفك وحاول مجدداً.");
             btn.disabled = false;
-            btn.innerText = "موافقة وتأكيد الحجز الفوري عبر واتساب ⚡";
+            btn.innerText = "موافقة وتأكيد الحجز الفوري بالعيادة ⚡";
         }
     }
 </script>
-
 </body>
 </html>
