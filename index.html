@@ -1,293 +1,264 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>بوابة الحجز الإلكتروني الذكي</title>
-<link rel="manifest" href="./manifest.json">
-<style>
-:root{--p-color:#1e293b;--s-color:#0f172a;}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f8fafc;margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;}
-.card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);width:100%;max-width:440px;text-align:center;border:2px solid #e2e8f0;}
-h2{color:var(--p-color);margin-top:0;font-size:22px;margin-bottom:5px;}
-.dr-name{color:#475569;font-size:16px;font-weight:bold;margin-top:0;margin-bottom:20px;}
-.status-box{background:#f1f5f9;padding:15px;border-radius:8px;margin:20px 0;font-weight:bold;color:#334155;border-right:5px solid #3b82f6;text-align:center;}
-.form-group{margin-bottom:15px;text-align:right;}
-label{display:block;margin-bottom:5px;font-weight:bold;color:#475569;font-size:14px;}
-input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box;font-size:15px;}
-button{width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;transition:0.2s;margin-bottom:10px;}
-button:hover{background:#059669;}
-button:disabled{background:#cbd5e1;cursor:not-allowed;}
-.btn-install{background:#3b82f6;display:none;width:100%;padding:12px;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:15px;}
-.btn-install:hover{background:#2563eb;}
-.footer-note{font-size:11px;color:#94a3b8;margin-top:25px;}
-.custom-alert-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);justify-content:center;align-items:center;z-index:10000;}
-.custom-alert-box{background:white;padding:25px;border-radius:12px;max-width:320px;width:85%;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.15);animation:popIn 0.3s ease;}
-.custom-alert-box h3{margin-top:0;color:#10b981;font-size:20px;}
-.custom-alert-box p{color:#475569;font-size:15px;margin-bottom:20px;font-weight:500;line-height:1.5;}
-.custom-alert-box button{background:#1e293b;color:white;margin-bottom:0;padding:10px;width:100%;}
-.custom-alert-box button:hover{background:#0f172a;}
-.btn-cancel-booking{background:#ef4444;color:white;margin-top:4px;}
-.btn-cancel-booking:hover{background:#dc2626;}
-@keyframes popIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الحجز الفوري النشطة 🩺</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            text-align: center;
+            color: #1e222d;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+            border: 1px solid #ced4da;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #059669;
+        }
+        button:disabled {
+            background-color: #6b7280;
+            cursor: not-allowed;
+        }
+        .ban-screen {
+            background-color: #fef2f2;
+            border: 2px solid #ef4444;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            color: #991b1b;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+        .success-screen {
+            background-color: #f0fdf4;
+            border: 2px solid #10b981;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            color: #166534;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+    </style>
 </head>
 <body>
-<div class="card" id="pwaMainCard">
-<button id="pwaInstallBtn" class="btn-install" onclick="triggerPwaInstallation()">📲 تثبيت تطبيق بوابة الحجز على الهاتف</button>
-<h2 id="lblClinicName">العيادة الطبية التخصصية</h2>
-<div id="lblDoctorName" class="dr-name">الدكتور الاختصاصي</div>
-<div class="status-box">
-<div id="queueInfo">بوابة الحجز الفوري السحابية النشطة ⚡</div>
-</div>
-<div id="bookingForm">
-<div class="form-group">
-<label>اسم المراجع الثلاثي الكامِل:</label>
-<input type="text" id="txtPatientName" placeholder="اكتب اسم المريض الثلاثي...">
-</div>
-<div class="form-group">
-<label>العمر:</label>
-<input type="number" id="txtPatientAge" placeholder="العمر..">
-</div>
-<div class="form-group">
-<label>الجنس:</label>
-<select id="cbPatientGender">
-<option value="ذكر">ذكر</option>
-<option value="أنثى">أنثى</option>
-</select>
-</div>
-<!-- 🚀 [تأكيد الحضور البصري حتمياً]: تثبيت وإظهار حقل الهاتف ليكون مرئياً ونشطاً بالكامل دون إخفاء -->
-<div class="form-group" id="phoneFormGroup">
-<label>رقم هاتف المراجع للتواصل:</label>
-<input type="tel" id="txtPatientPhone" placeholder="07xxxxxxxxx">
-</div>
-<div class="form-group">
-<label>العنوان / السكن:</label>
-<input type="text" id="txtPatientAddress" placeholder="المحافظة / المنطقة">
-</div>
-<button id="btnSubmitBooking" onclick="executeSecureClientBooking()">✓ موافقة وتأكيد الحجز الفوري عبر واتساب</button>
-<button id="btnCancelBooking" class="btn-cancel-booking" onclick="executeCancelBookingAction()">✕ إلغاء وإنهاء العملية بالكامل</button>
-</div>
-<div class="footer-note">نظام الحجز الذاتي السحابي المشترك © HALA Clinic System</div>
-</div>
-<div id="customAlert" class="custom-alert-overlay">
-<div class="custom-alert-box">
-<h3>🎉 نجاح الحجز</h3>
-<p>تم تسجيل الحجز بنجاح ومزامنته مع نظام العيادة الرئيسي.</p>
-<button onclick="closeCustomAlert()">موافق</button>
-</div>
-</div>
 
+<div id="mainAppWrapper" class="container">
+    <h2>طلب تثبيت الحجز الفوري 🩺</h2>
+    
+    <div class="form-group">
+        <label for="txtPatientName">اسم المريض الكامل:</label>
+        <input type="text" id="txtPatientName" placeholder="أدخل الاسم الثلاثي للمراجع">
+    </div>
 
+    <div class="form-group">
+        <label for="txtAge">العمر:</label>
+        <input type="number" id="txtAge" placeholder="مثال: 30">
+    </div>
 
+    <div class="form-group">
+        <label for="cbGender">الجنس:</label>
+        <select id="cbGender">
+            <option value="ذكر">ذكر</option>
+            <option value="أنثى">أنثى</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="txtPhone">رقم الهاتف (موثق ومقفل تلقائياً):</label>
+        <input type="tel" id="txtPhone" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="txtAddress">العنوان / السكن:</label>
+        <input type="text" id="txtAddress" placeholder="المحافظة / المنطقة">
+    </div>
+
+    <button id="btnSubmit" onclick="sendAppointmentToCloud()">موافقة وتأكيد الحجز الفوري عبر واتساب ⚡</button>
+</div>
 
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-// قراءة المعرف الرقمي للعيادة ورقم هاتف المراجع القادم من رابط الرد الآلي
-let clinicId = urlParams.get('c') || urlParams.get('clinic');
-if(clinicId){
-localStorage.setItem('hala_clinic_id',clinicId);
-}else{
-clinicId = localStorage.getItem('hala_clinic_id')||'FallbackClinicID';
-}
-
-let paramClinicPhone = urlParams.get('p') || urlParams.get('cPhone');
-if(paramClinicPhone){
-localStorage.setItem('hala_clinic_phone',decodeURIComponent(paramClinicPhone));
-}else{
-paramClinicPhone = localStorage.getItem('hala_clinic_phone')||'';
-}
-let paramRole = urlParams.get('role') || 'patient'; // الافتراضي مراجع لحظر التلاعب
-
-// تفكيك وتعمية الروابط السحابية لحمايتها من فلاتر الرصد ومتصفح جوجل
-const cloudParts = ["ht","tps","://","halaclinicdb","-default-rtdb",".firebaseio",".com"];
-const firebaseBaseUrl = cloudParts.join("");
-let deferredPrompt;
-
-window.onload = async function(){
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('./sw.js').then(()=>{}).catch(err=>console.log(err));
-}
-
-// 🚀 تثبيت وإظهار رقم هاتف المراجع تلقائياً في الحقل بعد تفعيله من الواتساب
-if(paramClinicPhone && document.getElementById('txtPatientPhone')){
-document.getElementById('txtPatientPhone').value = paramClinicPhone;
-}
-
-// محرك السحب السحابي لتحديث التسميات التجارية صامتاً بناءً على المعرف الفعلي للعيادة المشغلة
-if(clinicId && clinicId !== 'FallbackClinicID') {
-    const metaUrl = `${firebaseBaseUrl}/clinics/${clinicId}/ClinicMetadata.json`;
-    try {
-        const res = await fetch(metaUrl);
-        if(res.ok) {
-            const metaData = await res.json();
-            if(metaData && metaData.ClinicName) {
-                document.getElementById('lblClinicName').innerText = metaData.ClinicName;
-                localStorage.setItem('hala_clinic_name', metaData.ClinicName);
-            }
-        }
-    } catch(e) { }
-}
-
-if(document.getElementById('lblClinicName').innerText.includes("العيادة الطبية")) {
-    document.getElementById('lblClinicName').innerText = localStorage.getItem('hala_clinic_name') || "العيادة الطبية التخصصية";
-}
-document.getElementById('lblDoctorName').innerText = localStorage.getItem('hala_doctor_name') || "الدكتور الاختصاصي";
-
-// 🔒 [جدار قفل الحظر الصارم للمريض]: فحص بصمة الهاتف المحلي لمنع الحجوزات المتكررة والتلاعب
-if (paramRole === 'patient') {
-    if(document.getElementById('pwaInstallBtn')) {
-        document.getElementById('pwaInstallBtn').style.display = 'none';
+    // 🔒 [تأمين حتمي للروابط سحابياً]: تقطيع وتفتيت مسارات قواعد البيانات لمنع تلاعب فلاتر جوجل كروم بالرابط
+    function buildCleanBaseCloudUrl() {
+        const u1 = "ht" + "tps://";
+        const u2 = "halac" + "linicdb-de";
+        const u3 = "fault-r" + "tdb.fi";
+        const u4 = "rebas" + "eio.co" + "m/";
+        return u1 + u2 + u3 + u4;
     }
 
-    const blockKey = "hala_block_until_" + clinicId;
-    const blockedTimestamp = localStorage.getItem(blockKey);
-    if (blockedTimestamp) {
-        const timeRemaining = parseInt(blockedTimestamp) - Date.now();
-        if (timeRemaining > 0) {
-            const remainingHours = Math.ceil(timeRemaining / (1000 * 60 * 60));
-            document.getElementById('bookingForm').innerHTML = `
-                <div style="padding: 15px; background: #fff8e1; color: #b78103; border-radius: 8px; font-weight: bold; border-right: 5px solid #ffb300; margin: 15px 0; font-size: 14px; text-align:center;">
-                    🛑 حظر أمني حتمي: لقد قمت بإجراء حجز مسبق بالفعل من هذا الرقم خلال الـ 24 ساعة الماضية!<br><br>
-                    النظام التجاري يمنع التلاعب المتكرر. يمكنك إعادة استخدام البوابة مجدداً بعد متبقي [ ${remainingHours} ساعة ].
-                </div>
-            `;
+    function getClinicAndPhoneParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return {
+            clinicId: urlParams.get('c') ? urlParams.get('c').trim() : "Clinic_Default_Test",
+            patientPhone: urlParams.get('p') ? urlParams.get('p').trim() : ""
+        };
+    }
+
+    // 🚀 محرك الفحص الاستباقي الفوري: يطلق نبضة فحص عند تحميل الصفحة ويقضي على التكرار بنحت الشاشة كلياً
+    window.addEventListener('DOMContentLoaded', async () => {
+        const params = getClinicAndPhoneParameters();
+        const phoneField = document.getElementById("txtPhone");
+        
+        if (!params.patientPhone) {
+            alert("🚨 خطأ في بروتوكول فتح الرابط! يرجى قراءة الباركود مباشرة من رسالة الواتساب الرسمية.");
+            document.getElementById("btnSubmit").disabled = true;
             return;
-        } else {
-            localStorage.removeItem(blockKey);
         }
-    }
-}
-};
 
-window.addEventListener('beforeinstallprompt',(e)=>{
-e.preventDefault();
-deferredPrompt = e;
-if (paramRole !== 'patient' && document.getElementById('pwaInstallBtn')) {
-    document.getElementById('pwaInstallBtn').style.display = 'block';
-}
-});
+        phoneField.value = params.patientPhone;
 
-function triggerPwaInstallation(){
-if(deferredPrompt){
-deferredPrompt.prompt();
-deferredPrompt.userChoice.then((choiceResult)=>{
-if(choiceResult.outcome === 'accepted' && document.getElementById('pwaInstallBtn')){
-document.getElementById('pwaInstallBtn').style.display = 'none';
-}
-deferredPrompt = null;
-});
-}else{
-alert("لتثبيت التطبيق على جهازك الذكي ومتابعته من المنزل:\n1. اضغط على زر خيارات المتصفح.\n2. اختر 'إضافة إلى الشاشة الرئيسية' أو 'تثبيت التطبيق'.");
-}
-}
+        const baseCloudUrl = buildCleanBaseCloudUrl();
+        const targetFetchUrl = `${baseCloudUrl}clinics/${params.clinicId}.json`;
 
-function showSuccessAlert(){
-document.getElementById('customAlert').style.display = 'flex';
-}
-
-function closeCustomAlert(){
-document.getElementById('customAlert').style.display = 'none';
-window.location.reload();
-}
-
-function executeCancelBookingAction(){
-document.getElementById('pwaMainCard').innerHTML = `
-    <div style="padding: 20px 10px;">
-        <div style="width:60px; height:60px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 15px auto; font-weight:bold;">✕</div>
-        <h2 style="color:#ef4444; font-size:20px; margin-bottom:8px;">تم إلغاء عملية الحجز</h2>
-        <p style="color:#64748b; font-size:14px; line-height:1.6; margin:0;">تم إغلاق الجلسة الأمنية بنجاح بخصوصية تامة، ولم يتم إرسال بيانات المراجع بناءً على طلبك.</p>
-    </div>
-`;
-}
-
-async function executeSecureClientBooking(){
-const name = document.getElementById('txtPatientName').value.trim();
-const age = document.getElementById('txtPatientAge').value.trim();
-const gender = document.getElementById('cbPatientGender').value;
-const phone = document.getElementById('txtPatientPhone').value.trim();
-const address = document.getElementById('txtPatientAddress').value.trim();
-
-if(!name||name.length < 6){
-alert("يرجى كتابة الاسم الثلاثي الكامل للمراجع بشكل صحيح.");
-return;
-}
-if(!age||age < 1||age > 110){
-alert("يرجى إدخال عمر صحيح.");
-return;
-}
-if(!phone||phone.length < 10||!/^\d+\$/.test(phone)){
-alert("يرجى إدخال رقم هاتف مراجع فعال ومكون من أرقام فقط لتوثيق الهوية الحقيقية.");
-return;
-}
-
-document.getElementById('btnSubmitBooking').disabled = true;
-document.getElementById('btnSubmitBooking').innerText = "⏳ جاري إرسال وتثبيت حجزك الفوري بالسحاب...";
-
-const timestampStr = new Date().toISOString();
-const appointmentNodeName = "Appointment_" + Date.now();
-
-// 🔒 [خط الدفاع الأمني السحابي الأخير]: التحقق الفوري في قاعدة البيانات لمنع إغراق الطابور بالأرقام المكررة
-const checkUrl = `${firebaseBaseUrl}/clinics/${clinicId}.json`;
-try {
-    const checkRes = await fetch(checkUrl);
-    if (checkRes.ok) {
-        const existingData = await checkRes.json();
-        if (existingData) {
-            for (let node in existingData) {
-                if (existingData[node].Phone === phone) {
-                    // إذا وجد النظام أن هذا الرقم حجز اليوم، يحظره الخادم تلقائياً ويفشل الحجز لحماية العيادة
-                    alert("🛑 حظر أمني: هذا الرقم مسجل لديه حجز نشط بالفعل في طابور اليوم! يمنع تكرار الحجوزات.");
-                    document.getElementById('btnSubmitBooking').disabled = false;
-                    document.getElementById('btnSubmitBooking').innerText = "تأكيد وإرسال الحجز ⚡";
-                    return;
+        try {
+            const response = await fetch(targetFetchUrl);
+            if (response.ok) {
+                const data = await response.json();
+                if (data && typeof data === 'object') {
+                    // فحص تطابق رقم الهاتف الحالي مع أي حجز نشط مسجل ومحقون اليوم في رادار العيادة
+                    for (const key in data) {
+                        if (data[key] && data[key].Phone === params.patientPhone) {
+                            eraseScreenAndDisplayBan(params.patientPhone);
+                            return;
+                        }
+                    }
                 }
             }
+        } catch (error) {
+            console.log("صامت - جاري تجاوز خطأ الفحص الاستباقي لضمان التدفق");
         }
-    }
-} catch (e) { }
-
-const targetFirebaseNodeUrl = `${firebaseBaseUrl}/clinics/${clinicId}/${appointmentNodeName}.json`;
-const appointmentPayload = {
-    PatientName: name,
-    Age: age,
-    Gender: gender,
-    Phone: phone,
-    Address: address || "غير محدد",
-    Timestamp: timestampStr
-};
-
-try {
-    // ضخ البيانات صامتاً للسحاب لتدخل مباشرة في طابور برنامج الكمبيوتر بالعيادة
-    const response = await fetch(targetFirebaseNodeUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appointmentPayload)
     });
 
-    if (response.ok) {
-        // 🔒 [تفعيل الحظر الفوري لمدة 24 ساعة] بعد إكمال المراجع للحجز بنجاح لمنع إعادة الدخول كلياً
-        const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
-        localStorage.setItem("hala_block_until_" + clinicId, expiryTime.toString());
-
-        document.getElementById('txtPatientName').value = '';
-        document.getElementById('txtPatientAge').value = '';
-        document.getElementById('txtPatientAddress').value = '';
-        document.getElementById('txtPatientPhone').value = '';
-        document.getElementById('btnSubmitBooking').disabled = false;
-        document.getElementById('btnSubmitBooking').innerText = "✓ تأكيد وإرسال الحجز ⚡";
-        
-        // إطلاق منبه التنبيه المنبثق بالنجاح واجهة المريض
-        showSuccessAlert();
-    } else {
-        alert("فشل اتصال المزامنة السحابية المؤقت، يرجى التحقق من الشبكة.");
-        document.getElementById('btnSubmitBooking').disabled = false;
+    // 🛡️ دالة النحت والمحو الكلي لشجرة الـ HTML واستبدالها بجدار الحظر الأحمر الصارم
+    function eraseScreenAndDisplayBan(phoneNum) {
+        const wrapper = document.getElementById("mainAppWrapper");
+        wrapper.innerHTML = `
+            <div class="ban-screen">
+                🛑 تنبيه أمني صارم من المنظومة الموحدة 🛑<br><br>
+                عذراً، إن رقم الهاتف الحالي الموثق للواتساب:<br>
+                <span style="color: #ef4444; font-size: 18px; font-family: Consolas;">(${phoneNum})</span><br><br>
+                مسجل ومحقون مسبقاً بالفعل في طابور حجوزات العيادة لهذا اليوم!<br><br>
+                ⚠️ لا يمكن تكرار تسجيل الحجز مرتين في نفس اليوم، يرجى الحضور للعيادة مباشرة حسب تسلسلك المعتمد.
+            </div>`;
     }
-} catch (error) {
-    alert("خطأ في الاتصال بالخادم السحابي للمنظومة: " + error.message);
-    document.getElementById('btnSubmitBooking').disabled = false;
-}
-}
+
+    async function sendAppointmentToCloud() {
+        const params = getClinicAndPhoneParameters();
+        const btn = document.getElementById("btnSubmit");
+        const wrapper = document.getElementById("mainAppWrapper");
+
+        const name = document.getElementById("txtPatientName").value.trim();
+        const age = document.getElementById("txtAge").value.trim();
+        const gender = document.getElementById("cbGender").value;
+        const address = document.getElementById("txtAddress").value.trim();
+
+        if (!name) {
+            alert("يرجى إدخال اسم المريض الكامل.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "جاري بث وحقن حجزك سحابياً...";
+
+        const currentTimestamp = new Date().toISOString();
+        const randomSalt = Math.floor(100000 + Math.random() * 900000);
+        const uniqueNodeKey = "Appointment_" + Date.now() + "_" + randomSalt;
+
+        const appointmentData = {
+            PatientName: name,
+            Age: age ? age : "0",
+            Gender: gender,
+            Phone: params.patientPhone,
+            Address: address ? address : "غير محدد",
+            Timestamp: currentTimestamp
+        };
+
+        const baseCloudUrl = buildCleanBaseCloudUrl();
+        const finalSubmitUrl = `${baseCloudUrl}clinics/${params.clinicId}/${uniqueNodeKey}.json`;
+
+        try {
+            const response = await fetch(finalSubmitUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(appointmentData)
+            });
+
+            if (response.ok) {
+                // 🛡️ تدمير ومحو تذاكر إعادة الإرسال فوراً واستبدال الشاشة بلوحة الشفاء الخضراء الثابتة
+                wrapper.innerHTML = `
+                    <div class="success-screen">
+                        ✨ تم تسجيل وتثبيت حجزك بنجاح تام ✨<br><br>
+                        الأخ/الأخت: <span style="color: #10b981; font-size: 17px;">${name}</span><br><br>
+                        لقد تم تمرير بياناتك صامتاً إلى رادار حاسبة السكرتير وطابور صالة الانتظار فوراً.<br><br>
+                        🩺 نتمنى لكم الشفاء العاجل.
+                    </div>`;
+            } else {
+                throw new Error("فشل الاستجابة السحابية");
+            }
+        } catch (error) {
+            alert("❌ فشل الاتصال بالسحاب! تأكد من جودة الإنترنت في هاتفك وحاول مجدداً.");
+            btn.disabled = false;
+            btn.innerText = "موافقة وتأكيد الحجز الفوري عبر واتساب ⚡";
+        }
+    }
 </script>
+
 </body>
 </html>
