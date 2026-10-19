@@ -1,19 +1,14 @@
-// ====================================================================
-// اسم الملف: sw.js - المعماري السحابي المطور لحفظ استقلالية السكرتير والمريض بدون إنترنت
-// ====================================================================
-const CACHE_NAME = 'hala-clinic-v8'; // رفع الإصدار لـ v8 لفرض التحديث وتجاوز كاش الهواتف القديم فوراً
+const CACHE_NAME = 'hala-clinic-patient-v8'; 
 
-// 🚀 [تأمين الأصول الكاملة أوفلاين]: إدراج وحفظ ملف السكرتير بذاكرة الكاش ليعمل بدون إنترنت بثبات تكراري تام
+// 🚀 [تأمين الأصول النظيفة للبوابة]: إدراج وحفظ ملفات بوابة المراجعين والأيقونات الرسمية فقط لمنع التداخل والتعليق
 const ASSETS = [
-  '/',
   'index.html',
-  'secretary.html',
   'manifest.json',
   'icon-192.png',
   'icon-512.png'
 ];
 
-// التثبيت وحفظ الملفات الأساسية في ذاكرة الهاتف الكاش
+// التثبيت وحفظ الملفات الأساسية في ذاكرة الهاتف الكاش للمرضى
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME)
@@ -22,7 +17,7 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// تفعيل السيرفس وركر وحذف الكاش القديم فوراً لمنع تعليق البكسلات والملفات
+// تفعيل السيرفس وركر وحذف الكاش القديم فوراً
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
@@ -38,10 +33,9 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// استراتيجية النتوورك أولاً (Network-First) المحدثة لحظر الخلط والتداخل التجاري
+// استراتيجية النتوورك أولاً (Network-First) الذكية لبوابة المرضى
 self.addEventListener('fetch', (e) => {
-  // 🚀 [حماية الضخ السحابي الصامت للـ Firebase]: 
-  // استثناء كافة طرق الإرسال السحابية (PUT للمزامنة، POST للحقن، DELETE للحذف) لحظر تخزينها بذاكرة الكاش ومنع أخطاء الشبكة بالعيادة
+  // استثناء كافة طرق الإرسال السحابية لـ Firebase
   if (e.request.method !== 'GET') {
     e.respondWith(fetch(e.request));
     return;
@@ -49,28 +43,23 @@ self.addEventListener('fetch', (e) => {
 
   const requestUrl = e.request.url;
 
-  // تطبيق استراتيجية التحقق السريع والتنقل الذكي أوفلاين دون خلط الواجهات
-  if (e.request.mode === 'navigate' || requestUrl.includes('.html') || requestUrl === self.location.origin + '/') {
+  // تطبيق استراتيجية التحقق السريع والتنقل الذكي أوفلاين دون تداخل
+  if (e.request.mode === 'navigate' || requestUrl.includes('.html')) {
     e.respondWith(
       fetch(e.request)
         .then((networkResponse) => {
-          // تحديث الكاش فوراً بالنسخة الحية الجديدة القادمة من جيت هاب
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(e.request, networkResponse.clone());
             return networkResponse;
           });
         })
         .catch(() => {
-          // 🚀 [الفصل الهيكلي والإنقاذ الذكي عند انقطاع الإنترنت التام]:
-          // إذا انقطع الإنترنت عن السكرتير، يفتح له نسخة السكرتير المخزنة، وإذا انقطع عن المريض يفتح له نسخة المريض دون أي تداخل
-          if (requestUrl.includes('secretary.html')) {
-            return caches.match('secretary.html');
-          }
+          // فتح نسخة المريض التلقائية عند انقطاع الشبكة
           return caches.match('index.html') || caches.match(e.request);
         })
     );
   } else {
-    // باقي ملفات الـ PWA (المانيفست والأيقونات والصور) نأتي بها من الكاش لتسريع العمل وتوفير البيانات
+    // باقي ملفات الـ PWA نأتي بها من الكاش لتسريع العمل وتوفير البيانات
     e.respondWith(
       caches.match(e.request).then((res) => res || fetch(e.request))
     );
