@@ -22,8 +22,8 @@
 </head>
 <body>
 <div id="mainAppWrapper" class="container">
-    <h2 id="lblDynamicClinicName">جاري الاتصال بالسحاب وآمن... 🩺</h2>
-    <h3 id="lblDynamicDoctorName">لوحة تثبيت المواعيد الفورية</h3>
+    <h2 id="lblDynamicClinicName">بوابة حجز المواعيد الإلكترونية 🩺</h2>
+    <h3 id="lblDynamicDoctorName">طلب تثبيت حجز موعد جديد</h3>
     <div class="form-group">
         <label for="txtPatientName">اسم المريض الكامل:</label>
         <input type="text" id="txtPatientName" placeholder="أدخل الاسم الثلاثي للمراجع">
@@ -57,27 +57,27 @@
     }
     function getClinicAndPhoneParameters(){
         const urlParams=new URLSearchParams(window.location.search);
-        return{clinicId:urlParams.get('c')?urlParams.get('c').trim():"Clinic_Default_Test",patientPhone:urlParams.get('p')?urlParams.get('p').trim():""};
+        return{
+            clinicId:urlParams.get('c')?urlParams.get('c').trim():"Clinic_Default_Test",
+            patientPhone:urlParams.get('p')?urlParams.get('p').trim():"",
+            cName:urlParams.get('n')?decodeURIComponent(urlParams.get('n').trim()):"",
+            dName:urlParams.get('d')?decodeURIComponent(urlParams.get('d').trim()):""
+        };
     }
     window.addEventListener('DOMContentLoaded',async()=>{
         const params=getClinicAndPhoneParameters();const phoneField=document.getElementById("txtPhone");
         if(params.patientPhone){phoneField.value=params.patientPhone;phoneField.setAttribute("readonly",true);}
-        const baseCloudUrl=buildCleanBaseCloudUrl();
-        const metaFetchUrl=`${baseCloudUrl}clinics/${params.clinicId}/ClinicMetadata.json`;
-        try{
-            const metaResponse=await fetch(metaFetchUrl);
-            if(metaResponse.ok){
-                const metaData=await metaResponse.json();
-                if(metaData&&metaData.ClinicName){
-                    // 🚀 [الحقن الثنائي المدمج الحتمي]: دمج الحقل الأول مع الحقل الثاني لإنهاء النقص نهائيا بعناوين فخمة
-                    let fullTitle=metaData.ClinicName;
-                    if(metaData.DoctorName&&metaData.DoctorName!=""&&!metaData.DoctorName.startsWith("بيانات الحقل")){fullTitle+=" - "+metaData.DoctorName;}
-                    document.getElementById("lblDynamicClinicName").innerText=fullTitle;
-                    document.getElementById("lblDynamicDoctorName").innerText="طلب تثبيت حجز موعد جديد 🩺";document.title=fullTitle;
-                }else{document.getElementById("lblDynamicClinicName").innerText="بوابة حجز المواعيد الإلكترونية 🩺"}
-            }
-        }catch(e){document.getElementById("lblDynamicClinicName").innerText="بوابة حجز المواعيد الإلكترونية 🩺"}
+        
+        // سحب وحقن الترويسة المباشرة للمريض من الرابط
+        if(params.cName){
+            let fullTitle=params.cName;
+            if(params.dName&&params.dName!=""&&!params.dName.startsWith("بيانات الحقل")){fullTitle+=" - "+params.dName;}
+            document.getElementById("lblDynamicClinicName").innerText=fullTitle;
+            document.title=fullTitle;
+        }
+        
         if(params.patientPhone){
+            const baseCloudUrl=buildCleanBaseCloudUrl();
             const targetFetchUrl=`${baseCloudUrl}clinics/${params.clinicId}.json`;
             try{
                 const response=await fetch(targetFetchUrl);
